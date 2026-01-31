@@ -1,0 +1,51 @@
+# Default configuration for NLtoSPARQL
+
+# LLM Configuration
+llm:
+  # Provider options: "openai", "anthropic", "ollama", "deepseek"
+  provider: "openai"
+  
+  # Model configurations per provider
+  models:
+    openai:
+      model: "gpt-4o"
+      temperature: 0.1
+      max_tokens: 2000
+      base_url: "https://api.openai.com/v1"
+    anthropic:
+      model: "claude-3-5-sonnet-20241022"
+      temperature: 0.1
+      max_tokens: 2000
+    ollama:
+      model: "qwen3:14b"
+      temperature: 0.1
+      num_ctx: 4096
+    deepseek:
+      model: "deepseek-chat"
+      temperature: 0.1
+      max_tokens: 2000
+      base_url: "https://api.deepseek.com"
+
+# QLever Endpoints
+endpoints:
+  wikidata: "https://qlever.dev/api/wikidata"
+  dblp: "https://qlever.dev/api/dblp"
+  dbpedia: "https://qlever.dev/api/dbpedia"
+  freebase: "https://qlever.dev/api/freebase"
+  uniprot: "https://qlever.dev/api/uniprot"
+  osm: "https://qlever.dev/api/osm-planet"
+
+# Function Calling Configuration
+functions:
+  max_search_results: 10
+  max_list_triples: 10
+  query_timeout_seconds: 60
+  max_query_rows: 10
+  max_query_columns: 10
+
+# Agent Configuration
+agent:
+  max_iterations: 20
+  enable_validation: true
+  enable_feedback: true
+  max_feedback_loops: 2

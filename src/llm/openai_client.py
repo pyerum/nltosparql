@@ -38,6 +38,38 @@ class OpenAIClient(BaseLLM):
         Returns:
             LLMResponse object containing the response
         """
+        # Check if we should use tools instead of functions (for OpenRouter)
+        # OpenRouter requires tools instead of functions
+        if functions and self._should_use_tools():
+            # Convert functions to tools format
+            tools = []
+            for func in functions:
+                tool = {
+                    "type": "function",
+                    "function": {
+                        "name": func.get("name", ""),
+                        "description": func.get("description", ""),
+                        "parameters": func.get("parameters", {})
+                    }
+                }
+                tools.append(tool)
+            
+            # Convert function_call to tool_choice
+            tool_choice = None
+            if function_call:
+                if isinstance(function_call, str):
+                    tool_choice = function_call
+                elif isinstance(function_call, dict):
+                    tool_choice = function_call
+            
+            # Use the tools API
+            return await self.generate_with_tools(
+                messages=messages,
+                tools=tools,
+                tool_choice=tool_choice
+            )
+        
+        # Otherwise use the old functions API
         # Convert messages to OpenAI format
         openai_messages = []
         for msg in messages:
@@ -93,6 +125,25 @@ class OpenAIClient(BaseLLM):
             finish_reason=choice.finish_reason or "stop",
         )
     
+    def _should_use_tools(self) -> bool:
+        """
+        Check if we should use tools API instead of functions API.
+        
+        Returns:
+            True if we should use tools API (for OpenRouter)
+        """
+        # Check if base_url contains openrouter.ai
+        if hasattr(self.client, 'base_url') and self.client.base_url:
+            return 'openrouter.ai' in str(self.client.base_url)
+        
+        # Check if model name suggests OpenRouter
+        openrouter_models = ['deepseek/deepseek', 'openrouter/', 'anthropic/', 'google/']
+        for model_prefix in openrouter_models:
+            if model_prefix in self.model:
+                return True
+        
+        return False
+    
     async def generate_with_tools(
         self,
         messages: List[LLMMessage],
@@ -113,21 +164,43 @@ class OpenAIClient(BaseLLM):
         # Convert messages to OpenAI format
         openai_messages = []
         for msg in messages:
-            message_dict = {"role": msg.role}
-            if msg.content:
-                message_dict["content"] = msg.content
-            if msg.name:
-                message_dict["name"] = msg.name
+            message_dict: Dict[str, Any] = {}
+            
+            # For tool messages, we need to convert role from "function" to "tool"
+            if msg.role == "function":
+                message_dict["role"] = "tool"
+                # Try to extract tool_call_id from name or generate one
+                if msg.name and msg.name.startswith("call_"):
+                    message_dict["tool_call_id"] = msg.name
+                else:
+                    message_dict["tool_call_id"] = f"call_{msg.name}"
+                message_dict["content"] = msg.content or ""
+            else:
+                message_dict["role"] = msg.role
+                if msg.content:
+                    message_dict["content"] = msg.content
+                if msg.name:
+                    message_dict["name"] = msg.name
+            
+            # Handle tool calls from assistant messages
             if msg.function_call:
+                # Generate a unique tool call ID
+                import uuid
+                tool_call_id = f"call_{uuid.uuid4().hex[:8]}"
+                
                 # Convert function call to tool call for OpenAI
                 message_dict["tool_calls"] = [{
-                    "id": f"call_{msg.function_call.name}",
+                    "id": tool_call_id,
                     "type": "function",
                     "function": {
                         "name": msg.function_call.name,
                         "arguments": json.dumps(msg.function_call.arguments),
                     }
                 }]
+                
+                # Store the tool call ID in the message name for later reference
+                message_dict["name"] = tool_call_id
+            
             openai_messages.append(message_dict)
         
         # Prepare request parameters
@@ -163,6 +236,7 @@ class OpenAIClient(BaseLLM):
                         FunctionCall(
                             name=tool_call.function.name,
                             arguments=arguments,
+                            tool_call_id=tool_call.id  # Store the tool call ID
                         )
                     )
         

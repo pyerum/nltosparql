@@ -10,6 +10,7 @@ class FunctionCall(BaseModel):
     
     name: str = Field(..., description="Name of the function to call")
     arguments: Dict[str, Any] = Field(..., description="Arguments for the function")
+    tool_call_id: Optional[str] = Field(default=None, description="Tool call ID for OpenAI tools API")
 
 
 class LLMMessage(BaseModel):

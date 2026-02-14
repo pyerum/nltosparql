@@ -51,7 +51,7 @@ def create_llm_client(
     Create LLM client based on provider.
     
     Args:
-        provider: LLM provider (openai, ollama, deepseek)
+        provider: LLM provider (ollama or openrouter)
         model: Specific model to use (overrides config)
         config: Configuration dictionary
         
@@ -70,13 +70,12 @@ def create_llm_client(
     provider_config = models_config.get(provider, {}) or {}
     model_name = model or provider_config.get('model', '')
     temperature = provider_config.get('temperature', 0.1)
-    max_tokens = provider_config.get('max_tokens', 2000)
+    max_tokens = provider_config.get('max_tokens', 4096)
     
-    if provider in ['openai', 'deepseek']:
-        env_var_name = f"{provider.upper()}_API_KEY"
-        api_key = os.getenv(env_var_name)
+    if provider == 'openrouter':
+        api_key = os.getenv('OPENROUTER_API_KEY')
         if not api_key:
-            raise ValueError(f"{env_var_name} environment variable not set")
+            raise ValueError(f"OPENROUTER_API_KEY environment variable not set")
         
         base_url = provider_config.get('base_url')
         

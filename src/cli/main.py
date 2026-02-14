@@ -36,9 +36,9 @@ def load_config() -> dict:
 
 @cli.command()
 @click.argument('question')
-@click.option('--provider', '-p', default='openai', 
-              type=click.Choice(['openai', 'anthropic', 'ollama', 'deepseek']),
-              help='LLM provider to use')
+@click.option('--provider', '-p', default='ollama', 
+              type=click.Choice(['ollama', 'openrouter']),
+              help='LLM provider to use (ollama or openrouter)')
 @click.option('--endpoint', '-e', default='wikidata',
               help='QLever endpoint to use (e.g., wikidata, dblp, dbpedia)')
 @click.option('--model', '-m', default=None,
@@ -67,7 +67,7 @@ def query(question: str, provider: str, endpoint: str, model: Optional[str], ver
     provider_config = models_config.get(provider, {}) or {}
     model_name = model or provider_config.get('model', '')
     temperature = provider_config.get('temperature', 0.1)
-    max_tokens = provider_config.get('max_tokens', 2000)
+    max_tokens = provider_config.get('max_tokens', 4096)
     
     if verbose:
         click.echo(f"Using provider: {provider}")
@@ -77,12 +77,11 @@ def query(question: str, provider: str, endpoint: str, model: Optional[str], ver
     
     # Initialize LLM client
     llm_client = None
-    if provider in ['openai', 'deepseek']:
-        # For OpenAI-compatible APIs (OpenAI, DeepSeek)
-        env_var_name = f"{provider.upper()}_API_KEY"
-        api_key = os.getenv(env_var_name)
+    if provider == 'openrouter':
+        # For OpenRouter (OpenAI-compatible API)
+        api_key = os.getenv('OPENROUTER_API_KEY')
         if not api_key:
-            click.echo(f"Error: {env_var_name} environment variable not set", err=True)
+            click.echo(f"Error: OPENROUTER_API_KEY environment variable not set", err=True)
             return
         
         # Get base URL from config if specified
@@ -295,9 +294,9 @@ def endpoints_test(endpoint: str):
 
 
 @cli.command()
-@click.option('--provider', '-p', default='openai',
-              type=click.Choice(['openai', 'anthropic', 'ollama', 'deepseek']),
-              help='LLM provider to test')
+@click.option('--provider', '-p', default='ollama',
+              type=click.Choice(['ollama', 'openrouter']),
+              help='LLM provider to test (ollama or openrouter)')
 def test(provider: str):
     """Test LLM provider connection."""
     config = load_config()
@@ -321,14 +320,13 @@ def test(provider: str):
     
     click.echo(f"Testing {provider} connection with model '{model_name}'...")
     
-    if provider in ['openai', 'deepseek']:
-        env_var_name = f"{provider.upper()}_API_KEY"
-        api_key = os.getenv(env_var_name)
+    if provider == 'openrouter':
+        api_key = os.getenv('OPENROUTER_API_KEY')
         if not api_key:
-            click.echo(f"Error: {env_var_name} environment variable not set", err=True)
+            click.echo(f"Error: OPENROUTER_API_KEY environment variable not set", err=True)
             return
         
-        async def test_openai_compatible():
+        async def test_openrouter():
             try:
                 base_url = provider_config.get('base_url')
                 client = OpenAIClient(
@@ -340,12 +338,12 @@ def test(provider: str):
                 from ..llm.base import LLMMessage
                 messages = [LLMMessage(role="user", content="Hello, are you working?")]
                 response = await client.generate(messages)
-                click.echo(f"✓ {provider} connection successful")
+                click.echo(f"✓ OpenRouter connection successful")
                 click.echo(f"  Response: {response.content[:100]}...")
             except Exception as e:
-                click.echo(f"✗ {provider} connection failed: {e}")
+                click.echo(f"✗ OpenRouter connection failed: {e}")
         
-        asyncio.run(test_openai_compatible())
+        asyncio.run(test_openrouter())
     
     elif provider == 'ollama':
         async def test_ollama():
@@ -354,10 +352,10 @@ def test(provider: str):
                 from ..llm.base import LLMMessage
                 messages = [LLMMessage(role="user", content="Hello, are you working?")]
                 response = await client.generate(messages)
-                click.echo(f"Ollama connection successful")
+                click.echo(f"✓ Ollama connection successful")
                 click.echo(f"  Response: {response.content[:100]}...")
             except Exception as e:
-                click.echo(f"Ollama connection failed: {e}")
+                click.echo(f"✗ Ollama connection failed: {e}")
         
         asyncio.run(test_ollama())
     

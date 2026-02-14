@@ -146,6 +146,23 @@ Begin by searching for the main entity.
             if llm_response.function_calls:
                 self._log(f"LLM made {len(llm_response.function_calls)} function call(s)")
                 
+                # Add assistant message with function calls to conversation history
+                # This is needed for OpenAI tools API compatibility
+                assistant_message = LLMMessage(
+                    role="assistant",
+                    content=llm_response.content or "",
+                    function_call=None
+                )
+                
+                # If there are function calls, add them to the assistant message
+                if llm_response.function_calls:
+                    # For now, we'll just add the first function call
+                    # In a more complete implementation, we'd handle multiple tool calls
+                    first_call = llm_response.function_calls[0]
+                    assistant_message.function_call = first_call
+                
+                self.conversation_history.append(assistant_message)
+                
                 # Execute function calls
                 all_successful = True
                 for function_call in llm_response.function_calls:
@@ -185,10 +202,16 @@ Begin by searching for the main entity.
                     result_message = self._format_function_result_for_message(
                         function_name, result
                     )
+                    
+                    # Use tool_call_id if available (for OpenAI tools API)
+                    message_name = function_name
+                    if function_call.tool_call_id:
+                        message_name = function_call.tool_call_id
+                    
                     self.conversation_history.append(
                         LLMMessage(
                             role="function",
-                            name=function_name,
+                            name=message_name,
                             content=result_message
                         )
                     )

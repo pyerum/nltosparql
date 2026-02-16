@@ -1,15 +1,14 @@
 # NLtoSPARQL: Natural Language to SPARQL Query Generation
 
-A proof-of-concept system for generating SPARQL queries from natural language input using Large Language Models (LLMs) with function-calling capabilities. Supports both cloud LLM APIs (OpenAI, Anthropic) and local models (Ollama).
+A proof-of-concept system for generating SPARQL queries from natural language input using Large Language Models (LLMs) with function-calling capabilities. Supports both cloud LLM APIs (via OpenRouter) and local models (via Ollama). Currently works with wikidata only.
 
 ## Features
 
 - **Function-Calling LLMs**: Implements GRASP-inspired approach with functions for exploring knowledge graphs
-- **Multi-LLM Support**: Switch between OpenAI, Anthropic, and Ollama models
+- **Multi-LLM Support**: Switch between models served locally by Ollama or in the cloud via OpenRouter
 - **QLever Integration**: Works with QLever SPARQL endpoints
-- **Query Validation**: Basic SPARQL syntax validation
-- **Modular Architecture**: Easy to extend with new functions or LLM providers
-- **CLI Interface**: Simple command-line interface for interaction
+- **Query Validation**: Basic SPARQL syntax validation (IN IMPLEMENTATION)
+- **CLI Interface**: User interaction happens via cli, --verbose strongly suggested
 
 ## Architecture
 
@@ -20,7 +19,7 @@ src/
 ├── llm/              # LLM provider implementations
 ├── functions/        # Function-calling system
 ├── sparql/          # SPARQL execution and validation
-├── agent/           # Reasoning agent with ReAct pattern
+├── agent/           # Reasoning agent and instructions
 └── cli/             # Command-line interface
 ```
 
@@ -47,8 +46,6 @@ cp .env.example .env
 
 Edit `config/default.yaml` or set environment variables:
 
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `ANTHROPIC_API_KEY`: Your Anthropic API key  
 - `OLLAMA_HOST`: Ollama server URL (default: http://localhost:11434)
 - `QLEVER_ENDPOINT`: Default QLever endpoint
 
@@ -58,13 +55,7 @@ Edit `config/default.yaml` or set environment variables:
 
 ```bash
 # Generate SPARQL query for a natural language question
-nltosparql query "Who was the Governor of Ohio by the end of 2011?"
-
-# Specify LLM provider
-nltosparql query --provider ollama "Find all papers by John Doe in DBLP"
-
-# Use a specific QLever endpoint
-nltosparql query --endpoint dblp "Top 5 authors in computer science"
+nltosparql query --provider ollama --endpoint wikidata --verbose "Who was the Governor of Ohio by the end of 2011?"
 ```
 
 ### Available Commands
@@ -79,7 +70,7 @@ nltosparql endpoints list
 # Test connection to an endpoint
 nltosparql endpoints test --endpoint wikidata
 
-# Interactive mode
+# Interactive mode (experimental, do not use)
 nltosparql interactive
 ```
 
@@ -119,17 +110,16 @@ mypy src/
 
 ## Project Structure
 
-- `src/llm/`: LLM provider implementations (OpenAI, Anthropic, Ollama)
+- `src/llm/`: LLM provider implementations (OpenAI-like, Ollama)
 - `src/functions/`: Function definitions and registry
 - `src/sparql/`: QLever client and query validation
-- `src/agent/`: Reasoning agent with ReAct pattern
+- `src/agent/`: Reasoning agent pattern
 - `src/cli/`: Command-line interface
 - `config/`: Configuration files
-- `tests/`: Test suite
 
 ## License
 
-MIT License
+This is an educational project.
 
 ## Acknowledgments
 

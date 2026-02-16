@@ -2,7 +2,7 @@
 
 # LLM Configuration
 llm:
-  # Provider options: "openrouter" or "ollama"
+  # Default provider options: "openrouter" or "ollama"
   provider: "ollama"
   
   # Model configurations per provider

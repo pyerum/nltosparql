@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 
 from ..llm.base import BaseLLM, LLMMessage, LLMResponse, FunctionCall
+from ..functions.factory import create_registry
 from ..functions.registry import FunctionRegistry
 from ..functions.base import FunctionResult
 

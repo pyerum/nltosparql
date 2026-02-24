@@ -7,28 +7,7 @@ import os
 from ..llm.base import BaseLLM
 from ..llm.openai_client import OpenAIClient
 from ..llm.ollama_client import OllamaClient
-from ..functions.registry import FunctionRegistry
-from ..functions.search import (
-    SearchEntityFunction, 
-    SearchPropertyFunction, 
-    ListTriplesFunction, 
-    ExecuteQueryFunction
-)
-from ..functions.answer import AnswerFunction, CancelFunction
-from ..functions.discovery import (
-    DiscoverPropertiesFunction,
-    SearchPropertyByConceptFunction,
-    GetPropertyDetailsFunction
-)
-from ..functions.exploration import (
-    GetEntityPropertiesFunction,
-    FindRelationshipPathsFunction,
-    ExplorePropertyValuesFunction
-)
-from ..functions.examples import (
-    GetSimilarExamplesFunction,
-    GetPropertyPatternsFunction
-)
+from ..functions.factory import create_registry
 from ..agent.orchestrator import AgentOrchestrator
 
 
@@ -96,40 +75,17 @@ def create_llm_client(
         raise ValueError(f"Provider '{provider}' not yet implemented")
 
 
-def create_function_registry() -> FunctionRegistry:
+def create_function_registry(kg_name: str = "wikidata"):
     """
-    Create and populate function registry.
+    Create and populate function registry for a specific knowledge graph.
     
+    Args:
+        kg_name: Name of the knowledge graph (e.g., "wikidata")
+        
     Returns:
-        FunctionRegistry with all functions registered
+        FunctionRegistry with functions registered for the specified knowledge graph
     """
-    registry = FunctionRegistry()
-    
-    # Register search functions
-    registry.register(SearchEntityFunction())
-    registry.register(SearchPropertyFunction())
-    registry.register(ListTriplesFunction())
-    registry.register(ExecuteQueryFunction())
-    
-    # Register answer functions
-    registry.register(AnswerFunction())
-    registry.register(CancelFunction())
-    
-    # Register discovery functions
-    registry.register(DiscoverPropertiesFunction())
-    registry.register(SearchPropertyByConceptFunction())
-    registry.register(GetPropertyDetailsFunction())
-    
-    # Register exploration functions
-    registry.register(GetEntityPropertiesFunction())
-    registry.register(FindRelationshipPathsFunction())
-    registry.register(ExplorePropertyValuesFunction())
-    
-    # Register example functions
-    registry.register(GetSimilarExamplesFunction())
-    registry.register(GetPropertyPatternsFunction())
-    
-    return registry
+    return create_registry(kg_name)
 
 
 def create_agent(
@@ -138,7 +94,8 @@ def create_agent(
     max_iterations: int = 20,
     enable_feedback: bool = True,
     max_feedback_loops: int = 2,
-    verbose: bool = False
+    verbose: bool = False,
+    kg_name: str = "wikidata"
 ) -> AgentOrchestrator:
     """
     Create agent orchestrator with LLM and function registry.
@@ -150,6 +107,7 @@ def create_agent(
         enable_feedback: Whether to enable feedback mechanism
         max_feedback_loops: Maximum feedback loops
         verbose: Whether to enable verbose logging
+        kg_name: Knowledge graph name (e.g., "wikidata")
         
     Returns:
         AgentOrchestrator instance
@@ -159,8 +117,8 @@ def create_agent(
     # Create LLM client
     llm = create_llm_client(provider=provider, model=model, config=config)
     
-    # Create function registry
-    function_registry = create_function_registry()
+    # Create function registry for the specific knowledge graph
+    function_registry = create_function_registry(kg_name)
     
     # Create agent
     agent = AgentOrchestrator(

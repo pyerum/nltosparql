@@ -126,10 +126,11 @@ async def run_query_generation(question: str, llm_client, qlever_client, verbose
         # Import here to avoid circular imports
         from src.utils.system_init import create_agent
         
-        # Create agent
+        # Create agent with knowledge graph name
         agent = create_agent(
             provider=provider,
-            verbose=verbose
+            verbose=verbose,
+            kg_name=endpoint
         )
         
         # Process question

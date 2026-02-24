@@ -42,6 +42,18 @@ class GetEntityPropertiesFunction(BaseFunction):
                     type="string",
                     description="Optional filter for property names/labels (e.g., 'label', 'description')",
                     required=False
+                ),
+                FunctionParameter(
+                    name="keywords",
+                    type="string",
+                    description="Comma-separated keywords to filter properties (only include if label contains at least one keyword)",
+                    required=False
+                ),
+                FunctionParameter(
+                    name="include_unlabeled",
+                    type="boolean",
+                    description="Include properties without labels (default: false to save tokens)",
+                    required=False
                 )
             ]
         )
@@ -51,6 +63,27 @@ class GetEntityPropertiesFunction(BaseFunction):
         entity = kwargs.get("entity")
         limit_per_property = kwargs.get("limit_per_property", 3)
         property_filter = kwargs.get("property_filter")
+        keywords = kwargs.get("keywords", "")
+        include_unlabeled = kwargs.get("include_unlabeled", False)
+        
+        # Convert limit_per_property to integer if it's a string
+        if isinstance(limit_per_property, str):
+            try:
+                limit_per_property = int(limit_per_property)
+            except ValueError:
+                limit_per_property = 3
+        
+        # Convert include_unlabeled to boolean if it's a string
+        if isinstance(include_unlabeled, str):
+            include_unlabeled = include_unlabeled.lower() in ('true', '1', 'yes')
+        
+        # Parse keywords into a list
+        keywords_list = []
+        if keywords:
+            if isinstance(keywords, str):
+                keywords_list = [k.strip().lower() for k in keywords.split(',') if k.strip()]
+            elif isinstance(keywords, list):
+                keywords_list = [k.lower() if isinstance(k, str) else str(k).lower() for k in keywords]
         
         if not kg or not entity:
             return FunctionResult(
@@ -76,13 +109,14 @@ class GetEntityPropertiesFunction(BaseFunction):
                 )
             
             # First, get all distinct properties for the entity
+            # Use higher limit to include properties with few values (like population, capital)
             properties_query = f"""
             SELECT DISTINCT ?property (COUNT(?value) as ?value_count) WHERE {{
               <{entity}> ?property ?value .
             }}
             GROUP BY ?property
             ORDER BY DESC(?value_count)
-            LIMIT 50
+            LIMIT 200
             """
             
             async with QLeverClient(endpoint_url) as client:
@@ -100,6 +134,36 @@ class GetEntityPropertiesFunction(BaseFunction):
                         }
                     )
                 
+                # For Wikidata, use the Wikidata API to get property labels
+                property_labels = {}
+                if kg == "wikidata":
+                    from ..sparql.wikidata_search_client import WikidataSearchClient
+                    
+                    # Extract property IDs from URIs (e.g., http://www.wikidata.org/prop/direct/P47 -> P47)
+                    property_ids = []
+                    for prop_row in properties_result.results:
+                        prop_uri = prop_row.get('property', '')
+                        if '/prop/direct/' in prop_uri:
+                            prop_id = prop_uri.split('/prop/direct/')[-1]
+                            property_ids.append(prop_id)
+                    
+                    # Fetch labels for all properties using Wikidata API
+                    if property_ids:
+                        # Get labels in batch using wbgetentities
+                        async with WikidataSearchClient() as wikidata_client:
+                            for prop_id in property_ids[:200]:  # Limit to 200 properties
+                                try:
+                                    info = await wikidata_client.get_entity_info(prop_id)
+                                    if info and 'labels' in info:
+                                        label = info['labels'].get('en', {}).get('value', '')
+                                        description = info.get('descriptions', {}).get('en', {}).get('value', '')
+                                        property_labels[prop_id] = {
+                                            'label': label,
+                                            'description': description
+                                        }
+                                except Exception:
+                                    pass
+                
                 # Get property details and example values for each property
                 properties_with_details = []
                 
@@ -107,31 +171,29 @@ class GetEntityPropertiesFunction(BaseFunction):
                     prop_uri = prop_row.get('property', '')
                     value_count = int(prop_row.get('value_count', '0')) if prop_row.get('value_count', '0').isdigit() else 0
                     
-                    # Skip if property filter is specified and doesn't match
-                    if property_filter:
-                        # We'll check the label later after we fetch it
-                        pass
+                    # Extract property ID for label lookup
+                    prop_id = ''
+                    if '/prop/direct/' in prop_uri:
+                        prop_id = prop_uri.split('/prop/direct/')[-1]
                     
-                    # Get property label
-                    label_query = f"""
-                    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-                    PREFIX schema: <http://schema.org/>
-                    
-                    SELECT ?label WHERE {{
-                      <{prop_uri}> rdfs:label ?label .
-                      FILTER(LANG(?label) = "en" || LANG(?label) = "")
-                    }}
-                    LIMIT 1
-                    """
-                    
-                    label_result = await client.execute_query(label_query)
+                    # Get label from Wikidata API (if available) or use empty
                     label = ''
-                    if label_result.success and label_result.results:
-                        label = label_result.results[0].get('label', '')
+                    if kg == "wikidata" and prop_id in property_labels:
+                        label = property_labels[prop_id].get('label', '')
                     
-                    # Apply property filter if specified
+                    # Skip if property filter is specified and doesn't match
                     if property_filter and property_filter.lower() not in label.lower():
                         continue
+                    
+                    # Skip properties without labels unless explicitly requested
+                    if not include_unlabeled and not label:
+                        continue
+                    
+                    # Filter by keywords if specified (only include if label contains at least one keyword)
+                    if keywords_list:
+                        label_lower = label.lower()
+                        if not any(kw in label_lower for kw in keywords_list):
+                            continue
                     
                     # Get example values
                     examples_query = f"""
@@ -149,6 +211,7 @@ class GetEntityPropertiesFunction(BaseFunction):
                     
                     properties_with_details.append({
                         'property': prop_uri,
+                        'wikidata_id': prop_id,
                         'label': label,
                         'value_count': value_count,
                         'examples': examples

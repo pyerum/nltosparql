@@ -1,58 +1,35 @@
-"""Functions for NL-to-SPARQL conversion."""
+"""Function registry and factory for NL-to-SPARQL system."""
 
+from .registry import FunctionRegistry
 from .base import BaseFunction, FunctionDefinition, FunctionParameter, FunctionResult
-from .search import (
-    SearchEntityFunction,
-    SearchPropertyFunction,
-    ListTriplesFunction,
-    ExecuteQueryFunction
-)
-from .answer import AnswerFunction, CancelFunction
-from .discovery import (
-    DiscoverPropertiesFunction,
-    SearchPropertyByConceptFunction,
-    GetPropertyDetailsFunction
-)
+
+# Import all functions
+from .search import SearchEntityFunction, SearchPropertyFunction
+from .discovery import DiscoverPropertiesFunction
 from .exploration import (
     GetEntityPropertiesFunction,
     FindRelationshipPathsFunction,
     ExplorePropertyValuesFunction
 )
-from .examples import (
-    GetSimilarExamplesFunction,
-    GetPropertyPatternsFunction
-)
-from .registry import FunctionRegistry
+from .answer import AnswerFunction
+from .examples import GetSimilarExamplesFunction, GetPropertyPatternsFunction
 
 __all__ = [
-    # Base classes
+    # Core classes
+    'FunctionRegistry',
     'BaseFunction',
     'FunctionDefinition',
     'FunctionParameter',
     'FunctionResult',
-    'FunctionRegistry',
     
-    # Search functions
+    # Functions
     'SearchEntityFunction',
     'SearchPropertyFunction',
-    'ListTriplesFunction',
-    'ExecuteQueryFunction',
-    
-    # Answer functions
-    'AnswerFunction',
-    'CancelFunction',
-    
-    # Discovery functions
     'DiscoverPropertiesFunction',
-    'SearchPropertyByConceptFunction',
-    'GetPropertyDetailsFunction',
-    
-    # Exploration functions
     'GetEntityPropertiesFunction',
     'FindRelationshipPathsFunction',
     'ExplorePropertyValuesFunction',
-    
-    # Example functions
+    'AnswerFunction',
     'GetSimilarExamplesFunction',
     'GetPropertyPatternsFunction',
 ]

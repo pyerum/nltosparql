@@ -7,6 +7,7 @@ A proof-of-concept system for generating SPARQL queries from natural language in
 - **Function-Calling LLMs**: Implements GRASP-inspired approach with functions for exploring knowledge graphs
 - **Multi-LLM Support**: Switch between models served locally by Ollama or in the cloud via OpenRouter
 - **QLever Integration**: Works with QLever SPARQL endpoints
+- **Ontology Support**: Use custom ontologies to guide query generation
 - **Query Validation**: Basic SPARQL syntax validation (IN IMPLEMENTATION)
 - **CLI Interface**: User interaction happens via cli, --verbose strongly suggested
 
@@ -56,6 +57,30 @@ Edit `config/default.yaml` or set environment variables:
 ```bash
 # Generate SPARQL query for a natural language question
 nltosparql query --provider ollama --endpoint wikidata --verbose "Who was the Governor of Ohio by the end of 2011?"
+```
+
+### Using Ontologies
+
+You can provide custom ontologies to guide the LLM in generating SPARQL queries. Ontologies help the model understand the schema, class hierarchies, and relationships in your knowledge graph.
+
+Place your ontology files (in Turtle format) in the `ontologies/` directory:
+
+```bash
+ontologies/
+├── my_ontology.ttl
+└── another_ontology.ttl
+```
+
+Then use the `-o` or `--ontology` option:
+
+```bash
+# Single ontology
+nltosparql query --provider ollama --endpoint wikidata --verbose "Your question" --ontology my_ontology.ttl
+
+# Multiple ontologies
+nltosparql query --provider ollama --endpoint wikidata --verbose "Your question" \
+  --ontology ontology_1.ttl \
+  --ontology ontology_2.ttl
 ```
 
 ### Available Commands

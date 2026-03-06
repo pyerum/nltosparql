@@ -45,7 +45,9 @@ def load_config() -> dict:
               help='Specific model to use (overrides config)')
 @click.option('--verbose', '-v', is_flag=True,
               help='Enable verbose output')
-def query(question: str, provider: str, endpoint: str, model: Optional[str], verbose: bool):
+@click.option('--ontology', '-o', 'ontologies', multiple=True,
+              help='Path to ontology file(s) in Turtle format (relative to /ontologies)')
+def query(question: str, provider: str, endpoint: str, model: Optional[str], verbose: bool, ontologies: tuple):
     """Generate a SPARQL query for a natural language question."""
     config = load_config()
     
@@ -114,11 +116,12 @@ def query(question: str, provider: str, endpoint: str, model: Optional[str], ver
         qlever_client=qlever_client,
         verbose=verbose,
         provider=provider,
-        endpoint=endpoint
+        endpoint=endpoint,
+        ontologies=ontologies
     ))
 
 
-async def run_query_generation(question: str, llm_client, qlever_client, verbose: bool, provider: str, endpoint: str):
+async def run_query_generation(question: str, llm_client, qlever_client, verbose: bool, provider: str, endpoint: str, ontologies: tuple = ()):
     """Run the query generation process using the agent."""
     click.echo("Generating SPARQL query using agent...")
     
@@ -126,11 +129,12 @@ async def run_query_generation(question: str, llm_client, qlever_client, verbose
         # Import here to avoid circular imports
         from src.utils.system_init import create_agent
         
-        # Create agent with knowledge graph name
+        # Create agent with knowledge graph name and ontologies
         agent = create_agent(
             provider=provider,
             verbose=verbose,
-            kg_name=endpoint
+            kg_name=endpoint,
+            ontologies=list(ontologies) if ontologies else None
         )
         
         # Process question

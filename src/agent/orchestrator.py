@@ -21,7 +21,8 @@ class AgentOrchestrator:
         max_iterations: int = 20,
         enable_feedback: bool = True,
         max_feedback_loops: int = 2,
-        verbose: bool = False
+        verbose: bool = False,
+        ontology_content: Optional[str] = None
     ):
         self.llm = llm
         self.function_registry = function_registry
@@ -29,6 +30,7 @@ class AgentOrchestrator:
         self.enable_feedback = enable_feedback
         self.max_feedback_loops = max_feedback_loops
         self.verbose = verbose
+        self.ontology_content = ontology_content
         
         self.conversation_history: List[LLMMessage] = []
         self.function_results: List[Dict[str, Any]] = []
@@ -53,12 +55,32 @@ class AgentOrchestrator:
         endpoints = config.get('endpoints', {})
         kg_list = ", ".join(endpoints.keys())
         
-        prompt = f"""Generate SPARQL queries to answer questions about {kg_name}.
+        # Format functions for prompt
+        functions_prompt = self._format_functions_for_prompt()
         
+        # Build prompt with optional ontology content
+        prompt_parts = []
+        
+        # Base prompt
+        prompt_parts.append(f"Generate SPARQL queries to answer questions about {kg_name}.")
+        
+        # Add ontology information if available
+        if self.ontology_content:
+            ontology_section = f"""
+IMPORTANT: The following ontology defines the schema and concepts for this knowledge graph:
+
+{self.ontology_content}
+
+When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology.
+"""
+            prompt_parts.append(ontology_section.strip())
+        
+        # Add functions and instructions
+        instructions = f"""
 When you call a function only include the body of the function in the output, no reasoning or other text.
 
 Available functions:
-{self._format_functions_for_prompt()}
+{functions_prompt}
 
 Process:
 1. Use search_entity to find entities
@@ -72,8 +94,9 @@ Question: {question}
 
 Begin by searching for the main entity.
 """
+        prompt_parts.append(instructions.strip())
         
-        return prompt
+        return "\n\n".join(prompt_parts)
     
     def _format_functions_for_prompt(self) -> str:
         """Format function definitions for the prompt."""

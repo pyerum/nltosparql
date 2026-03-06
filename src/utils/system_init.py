@@ -88,6 +88,27 @@ def create_function_registry(kg_name: str = "wikidata"):
     return create_registry(kg_name)
 
 
+def _load_ontology_content(ontology_path: str) -> str:
+    """
+    Load and return the content of an ontology file.
+    
+    Args:
+        ontology_path: Path to the ontology file (relative to /ontologies directory)
+        
+    Returns:
+        Content of the ontology file as a string
+    """
+    # Get the base ontologies directory (relative to this file's location)
+    base_dir = os.path.join(os.path.dirname(__file__), "../../ontologies")
+    full_path = os.path.join(base_dir, ontology_path)
+    
+    if not os.path.exists(full_path):
+        raise FileNotFoundError(f"Ontology file not found: {full_path}")
+    
+    with open(full_path, 'r', encoding='utf-8') as f:
+        return f.read()
+
+
 def create_agent(
     provider: str = "ollama",
     model: Optional[str] = None,
@@ -95,7 +116,8 @@ def create_agent(
     enable_feedback: bool = True,
     max_feedback_loops: int = 2,
     verbose: bool = False,
-    kg_name: str = "wikidata"
+    kg_name: str = "wikidata",
+    ontologies: Optional[list] = None
 ) -> AgentOrchestrator:
     """
     Create agent orchestrator with LLM and function registry.
@@ -108,6 +130,7 @@ def create_agent(
         max_feedback_loops: Maximum feedback loops
         verbose: Whether to enable verbose logging
         kg_name: Knowledge graph name (e.g., "wikidata")
+        ontologies: List of ontology file paths (relative to /ontologies directory)
         
     Returns:
         AgentOrchestrator instance
@@ -120,6 +143,21 @@ def create_agent(
     # Create function registry for the specific knowledge graph
     function_registry = create_function_registry(kg_name)
     
+    # Load ontology content if provided
+    ontology_content = None
+    if ontologies:
+        ontology_sections = []
+        for ontology_path in ontologies:
+            try:
+                content = _load_ontology_content(ontology_path)
+                ontology_sections.append(f"## Ontology: {ontology_path}\n{content}")
+            except FileNotFoundError as e:
+                if verbose:
+                    print(f"Warning: {e}")
+        
+        if ontology_sections:
+            ontology_content = "\n\n".join(ontology_sections)
+    
     # Create agent
     agent = AgentOrchestrator(
         llm=llm,
@@ -127,7 +165,8 @@ def create_agent(
         max_iterations=max_iterations,
         enable_feedback=enable_feedback,
         max_feedback_loops=max_feedback_loops,
-        verbose=verbose
+        verbose=verbose,
+        ontology_content=ontology_content
     )
     
     return agent

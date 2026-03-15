@@ -71,7 +71,7 @@ class FunctionRegistryFactory:
             function_creator = self._kg_function_sets['generic']
         
         # Create registry and register functions
-        registry = FunctionRegistry()
+        registry = FunctionRegistry(kg_name=kg_name)
         functions = function_creator()
         
         for name, function in functions.items():

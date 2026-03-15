@@ -31,6 +31,7 @@ class AgentOrchestrator:
         self.max_feedback_loops = max_feedback_loops
         self.verbose = verbose
         self.ontology_content = ontology_content
+        self.kg_name = function_registry.kg_name
         
         self.conversation_history: List[LLMMessage] = []
         self.function_results: List[Dict[str, Any]] = []
@@ -62,7 +63,7 @@ class AgentOrchestrator:
         prompt_parts = []
         
         # Base prompt
-        prompt_parts.append(f"Generate SPARQL queries to answer questions using the selected KG.")
+        prompt_parts.append(f"Generate a SPARQL query to answer the question, using the selected KG.")
         
         # Add ontology information if available
         if self.ontology_content:
@@ -72,13 +73,13 @@ IMPORTANT: The following ontology defines the schema and concepts for this knowl
 {self.ontology_content}
 
 When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology.
+IMPORTANT: When querying for a class, remember that instances may be 
+of subclasses. Use property paths like:
+  ?entity a ?type . ?type rdfs:subClassOf* :TargetClass
 """
             prompt_parts.append(ontology_section.strip())
         
-        # Add important note about using the correct knowledge graph
-        kg_note = f"""Use "{kg_name}" as the value for the "kg" parameter in ALL function calls."""
-        prompt_parts.append(kg_note.strip())
-        
+                
         # Add functions and instructions
         instructions = f"""
 When you call a function only include the body of the function in the output, no reasoning or other text.
@@ -86,12 +87,11 @@ When you call a function only include the body of the function in the output, no
 Available functions:
 {functions_prompt}
 
-YOU HAVE TO FOLLOW THIS PROCESS TO GENERATE THE QUERY:
+MUST FOLLOW THIS PROCESS TO GENERATE THE QUERY:
 1. Use functions for as many iterations as needed, refining the usage as you learn the structure of the knowledge.
-2. Use the return of the function calls to refine your thought process and execute further function calls if needed. Do not give up and answer right away if you can't find entities immediately, try explore and understand the graph in other ways or using other functions.
-3. Create SPARQL query
-4. YOU MUST TEST THE QUERY with execute_query
-5. Use answer function to provide final result
+2. Use the return content of the function calls to refine your thought process and execute further function calls if needed. Do not give up and answer right away if you can't find entities immediately, try explore and understand the graph in other ways or using other functions.
+3. YOU MUST TEST THE QUERY before giving it to the answer function, via execute_query
+4. Use answer function to provide final result
 
 Question: {question}
 

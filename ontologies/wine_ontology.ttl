@@ -1,0 +1,99 @@
+@prefix : <http://example.org/wine-ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Classi
+:Wine a owl:Class ;
+    rdfs:label "Wine"@en ;
+    rdfs:comment "A type of alcoholic beverage made from fermented grapes"@en .
+
+:RedWine a owl:Class ;
+    rdfs:subClassOf :Wine ;
+    rdfs:label "Red Wine"@en .
+
+:WhiteWine a owl:Class ;
+    rdfs:subClassOf :Wine ;
+    rdfs:label "White Wine"@en .
+
+:RoséWine a owl:Class ;
+    rdfs:subClassOf :Wine ;
+    rdfs:label "Rosé Wine"@en .
+
+:Winery a owl:Class ;
+    rdfs:label "Winery"@en ;
+    rdfs:comment "A place where wine is produced"@en .
+
+:Region a owl:Class ;
+    rdfs:label "Region"@en ;
+    rdfs:comment "A geographical wine region"@en .
+
+:Grape a owl:Class ;
+    rdfs:label "Grape"@en ;
+    rdfs:comment "A type of grape used in winemaking"@en .
+
+# Proprietà oggetto
+:hasMaker a owl:ObjectProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range :Winery ;
+    rdfs:label "has maker"@en .
+
+:locatedIn a owl:ObjectProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range :Region ;
+    rdfs:label "located in"@en .
+
+:madeFromGrape a owl:ObjectProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range :Grape ;
+    rdfs:label "made from grape"@en .
+
+:producesWine a owl:ObjectProperty ;
+    rdfs:domain :Winery ;
+    rdfs:range :Wine ;
+    rdfs:label "produces wine"@en .
+
+:inCountry a owl:ObjectProperty ;
+    rdfs:domain :Region ;
+    rdfs:range :Country ;
+    rdfs:label "in country"@en .
+
+# Proprietà datatype
+:hasBody a owl:DatatypeProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range xsd:string ;
+    rdfs:label "has body"@en .
+
+:hasColor a owl:DatatypeProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range xsd:string ;
+    rdfs:label "has color"@en .
+
+:hasSugar a owl:DatatypeProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range xsd:string ;
+    rdfs:label "has sugar level"@en .
+
+:hasPrice a owl:DatatypeProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "has price"@en .
+
+:hasAlcoholContent a owl:DatatypeProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "has alcohol content"@en .
+
+:hasVintage a owl:DatatypeProperty ;
+    rdfs:domain :Wine ;
+    rdfs:range xsd:gYear ;
+    rdfs:label "has vintage year"@en .
+
+:hasName a owl:DatatypeProperty ;
+    rdfs:domain :Winery ;
+    rdfs:range xsd:string ;
+    rdfs:label "has name"@en .
+
+:Country a owl:Class ;
+    rdfs:label "Country"@en .

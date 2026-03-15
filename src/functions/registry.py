@@ -7,8 +7,9 @@ from .base import BaseFunction, FunctionResult
 class FunctionRegistry:
     """Registry for managing functions that can be called by the LLM."""
     
-    def __init__(self):
+    def __init__(self, kg_name: str):
         self._functions: Dict[str, BaseFunction] = {}
+        self.kg_name = kg_name
     
     def register(self, function: BaseFunction) -> None:
         """
@@ -65,6 +66,7 @@ class FunctionRegistry:
     async def execute_function(self, function_name: str, arguments: Dict[str, Any]) -> FunctionResult:
         """
         Execute a function with the given arguments.
+        Auto-injects kg_name if not already present in arguments.
         
         Args:
             function_name: Name of the function to execute
@@ -79,6 +81,11 @@ class FunctionRegistry:
                 success=False,
                 error=f"Function '{function_name}' not found"
             )
+        
+        # Auto-inject kg_name if not already present
+        if "kg" not in arguments:
+            arguments = arguments.copy()
+            arguments["kg"] = self.kg_name
         
         # Validate arguments
         validation_errors = function.validate_arguments(arguments)

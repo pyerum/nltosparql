@@ -62,7 +62,7 @@ class AgentOrchestrator:
         prompt_parts = []
         
         # Base prompt
-        prompt_parts.append(f"Generate a SPARQL query to answer the question, using the selected KG.")
+        prompt_parts.append(f"Generate a SPARQL query to answer the question, using the functions available to understand the Knowledge Graph and come to a correct query and result.")
         
         # Add ontology information if available
         if self.ontology_content:
@@ -71,15 +71,9 @@ IMPORTANT: The following ontology defines the schema and concepts for this knowl
 
 {self.ontology_content}
 
-When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology.
-IMPORTANT: When querying for a class, remember that instances may be 
-of subclasses. Use property paths like:
-  ?entity a ?type . ?type rdfs:subClassOf* :TargetClass
+When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology. Remember to use PREFIXes when possible.
 """
             prompt_parts.append(ontology_section.strip())
-        
-        # Note: The kg parameter is now automatically set by the function registry
-        # No need to instruct the LLM to pass it
         
         # Add functions and instructions
         instructions = f"""

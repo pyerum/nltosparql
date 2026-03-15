@@ -402,24 +402,28 @@ class ListTriplesFunction(BaseFunction):
                 )
             
             # Build SPARQL query with constraints
-            where_clauses = []
+            # Start with basic triple pattern
+            where_clause = "?s ?p ?o"
+            
+            # Add FILTER statements for constraints
+            filters = []
             
             if subject:
-                where_clauses.append(f"?s = <{subject}>")
-            else:
-                where_clauses.append("?s ?p ?o")
+                filters.append(f"FILTER(?s = <{subject}>)")
             
             if property_:
-                where_clauses.append(f"?p = <{property_}>")
+                filters.append(f"FILTER(?p = <{property_}>)")
             
             if object_:
                 # Check if object is an IRI or literal
                 if object_.startswith("http://") or object_.startswith("https://"):
-                    where_clauses.append(f"?o = <{object_}>")
+                    filters.append(f"FILTER(?o = <{object_}>)")
                 else:
-                    where_clauses.append(f'?o = "{object_}"')
+                    filters.append(f'FILTER(?o = "{object_}")')
             
-            where_clause = " . ".join(where_clauses)
+            # Combine query parts and filters
+            if filters:
+                where_clause += " . " + " . ".join(filters)
             
             query = f"""
             SELECT ?s ?p ?o WHERE {{

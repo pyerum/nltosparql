@@ -5,7 +5,7 @@ from .registry import FunctionRegistry
 from .base import BaseFunction
 
 # Import all available functions
-from .search import SearchEntityFunction, SearchPropertyFunction
+from .search import SearchEntityFunction, SearchPropertyFunction, ListTriplesFunction, ExecuteQueryFunction
 from .discovery import DiscoverPropertiesFunction
 from .exploration import (
     GetEntityPropertiesFunction,
@@ -33,6 +33,8 @@ class FunctionRegistryFactory:
         return {
             'search_entity': SearchEntityFunction(),
             'search_property': SearchPropertyFunction(),
+            'list_triples': ListTriplesFunction(),
+            'execute_query': ExecuteQueryFunction(),
             'discover_properties': DiscoverPropertiesFunction(),
             'get_entity_properties': GetEntityPropertiesFunction(),
             'find_relationship_paths': FindRelationshipPathsFunction(),

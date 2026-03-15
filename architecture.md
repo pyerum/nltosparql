@@ -8,9 +8,14 @@ graph TD
     CLI --> Agent["AgentOrchestrator"]
     Agent <--> LLM["LLM (Ollama/OpenRouter)"]
     Agent <--> Functions["Function Registry"]
+    Functions --> GenericSPARQL["Generic SPARQL Endpoint"]
     Functions --> WikidataAPI["Wikidata API"]
-    Functions --> QLever["QLever SPARQL Endpoint"]
     Agent --> Response["Final Answer"]
+    
+    subgraph "Knowledge Graph Support"
+        GenericSPARQL --> Config["Configurable Endpoints"]
+        WikidataAPI --> WikidataConfig["Wikidata-specific"]
+    end
 ```
 
 ## Agent Loop
@@ -27,8 +32,6 @@ sequenceDiagram
     A->>L: Generate (with system prompt + functions)
     L-->>A: function_call: search_entity
     A->>F: execute(search_entity, {query: "Spain"})
-    F->>KG: Wikidata API
-    KG-->>F: Spain = Q29
     F-->>A: result
     A->>L: Generate (with result)
     L-->>A: function_call: discover_properties
@@ -37,8 +40,8 @@ sequenceDiagram
     A->>L: Generate (with result)
     L-->>A: function_call: execute_query
     A->>F: execute(execute_query, {sparql: SELECT...})
-    F->>KG: QLever
-    KG-->>F: [Portugal, France, Andorra...]
+    F->>KG: SPARQL query (QLever, Wikidata API, Fuseki, etc)
+    KG-->>F: Query response
     F-->>A: results
     A->>L: Generate (with results)
     L-->>A: function_call: answer

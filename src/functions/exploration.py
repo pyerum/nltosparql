@@ -20,12 +20,6 @@ class GetEntityPropertiesFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="entity",
                     type="string",
                     description="Entity IRI",
@@ -85,10 +79,10 @@ class GetEntityPropertiesFunction(BaseFunction):
             elif isinstance(keywords, list):
                 keywords_list = [k.lower() if isinstance(k, str) else str(k).lower() for k in keywords]
         
-        if not kg or not entity:
+        if not entity:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and entity"
+                error="Missing required parameter: entity"
             )
         
         try:
@@ -296,12 +290,6 @@ class FindRelationshipPathsFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="entity1",
                     type="string",
                     description="First entity IRI",
@@ -335,10 +323,10 @@ class FindRelationshipPathsFunction(BaseFunction):
         max_path_length = kwargs.get("max_path_length", 3)
         limit = kwargs.get("limit", 10)
         
-        if not kg or not entity1 or not entity2:
+        if not entity1 or not entity2:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg, entity1, and entity2"
+                error="Missing required parameters: entity1 and entity2"
             )
         
         try:
@@ -471,12 +459,6 @@ class ExplorePropertyValuesFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="property",
                     type="string",
                     description="Property IRI",
@@ -503,10 +485,10 @@ class ExplorePropertyValuesFunction(BaseFunction):
         limit = kwargs.get("limit", 10)
         value_type = kwargs.get("value_type", "any")
         
-        if not kg or not property_uri:
+        if not property_uri:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and property"
+                error="Missing required parameter: property"
             )
         
         try:

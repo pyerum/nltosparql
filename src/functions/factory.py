@@ -13,7 +13,6 @@ from .exploration import (
     ExplorePropertyValuesFunction
 )
 from .answer import AnswerFunction
-from .examples import GetSimilarExamplesFunction, GetPropertyPatternsFunction
 
 
 class FunctionRegistryFactory:
@@ -39,8 +38,6 @@ class FunctionRegistryFactory:
             'find_relationship_paths': FindRelationshipPathsFunction(),
             'explore_property_values': ExplorePropertyValuesFunction(),
             'answer': AnswerFunction(),
-            'get_similar_examples': GetSimilarExamplesFunction(),
-            'get_property_patterns': GetPropertyPatternsFunction(),
         }
     
     def _create_generic_functions(self) -> Dict[str, BaseFunction]:

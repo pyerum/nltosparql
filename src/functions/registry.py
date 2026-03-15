@@ -7,7 +7,7 @@ from .base import BaseFunction, FunctionResult
 class FunctionRegistry:
     """Registry for managing functions that can be called by the LLM."""
     
-    def __init__(self, kg_name: str):
+    def __init__(self, kg_name: str = "wikidata"):
         self._functions: Dict[str, BaseFunction] = {}
         self.kg_name = kg_name
     
@@ -66,7 +66,6 @@ class FunctionRegistry:
     async def execute_function(self, function_name: str, arguments: Dict[str, Any]) -> FunctionResult:
         """
         Execute a function with the given arguments.
-        Auto-injects kg_name if not already present in arguments.
         
         Args:
             function_name: Name of the function to execute
@@ -82,13 +81,10 @@ class FunctionRegistry:
                 error=f"Function '{function_name}' not found"
             )
         
-        # Auto-inject kg_name if not already present
-        if "kg" not in arguments:
-            arguments = arguments.copy()
-            arguments["kg"] = self.kg_name
-        
-        # Validate arguments
-        validation_errors = function.validate_arguments(arguments)
+        # Validate arguments (ignoring kg - it's set by the registry)
+        # Remove kg from arguments for validation since it's auto-set by registry
+        validation_args = {k: v for k, v in arguments.items() if k != "kg"}
+        validation_errors = function.validate_arguments(validation_args)
         if validation_errors:
             return FunctionResult(
                 success=False,
@@ -96,8 +92,8 @@ class FunctionRegistry:
             )
         
         try:
-            # Execute the function
-            result = await function.execute(**arguments)
+            # Execute the function with kg_name from registry
+            result = await function.execute(**arguments, kg=self.kg_name)
             return result
         except Exception as e:
             return FunctionResult(

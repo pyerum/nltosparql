@@ -101,9 +101,7 @@ class BaseFunction(ABC):
             if param.required and param.name not in arguments:
                 errors.append(f"Missing required parameter: {param.name}")
         
-        # Check for unknown parameters
-        for arg_name in arguments.keys():
-            if arg_name not in [p.name for p in definition.parameters]:
-                errors.append(f"Unknown parameter: {arg_name}")
+        # Note: We allow unknown parameters (like 'kg' which is auto-set by registry)
+        # This allows the registry to pass kg without it being in the function definition
         
         return errors

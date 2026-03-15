@@ -20,12 +20,6 @@ class DiscoverPropertiesFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="entity",
                     type="string",
                     description="Entity IRI",
@@ -59,10 +53,10 @@ class DiscoverPropertiesFunction(BaseFunction):
             except ValueError:
                 limit = 10
         
-        if not kg or not entity or not concept:
+        if not entity or not concept:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg, entity, and concept"
+                error="Missing required parameters: entity and concept"
             )
         
         try:
@@ -269,12 +263,6 @@ class SearchPropertyByConceptFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="concept",
                     type="string",
                     description="Concept to search for (e.g., 'capital', 'population', 'author')",
@@ -301,10 +289,10 @@ class SearchPropertyByConceptFunction(BaseFunction):
             except ValueError:
                 limit = 10
         
-        if not kg or not concept:
+        if not concept:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and concept"
+                error="Missing required parameter: concept"
             )
         
         try:
@@ -469,12 +457,6 @@ class GetPropertyDetailsFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="property",
                     type="string",
                     description="Property IRI",
@@ -487,10 +469,10 @@ class GetPropertyDetailsFunction(BaseFunction):
         kg = kwargs.get("kg")
         property_uri = kwargs.get("property")
         
-        if not kg or not property_uri:
+        if not property_uri:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and property"
+                error="Missing required parameter: property"
             )
         
         try:

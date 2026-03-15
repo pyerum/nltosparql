@@ -21,12 +21,6 @@ class SearchEntityFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name (e.g., 'wikidata', 'dblp', 'dbpedia')",
-                    required=True
-                ),
-                FunctionParameter(
                     name="query",
                     type="string",
                     description="Search query for entities",
@@ -46,10 +40,10 @@ class SearchEntityFunction(BaseFunction):
         query = kwargs.get("query")
         limit = kwargs.get("limit", 10)
         
-        if not kg or not query:
+        if not query:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and query"
+                error="Missing required parameter: query"
             )
         
         try:
@@ -215,12 +209,6 @@ class SearchPropertyFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="query",
                     type="string",
                     description="Search query for properties",
@@ -240,10 +228,10 @@ class SearchPropertyFunction(BaseFunction):
         query = kwargs.get("query")
         limit = kwargs.get("limit", 10)
         
-        if not kg or not query:
+        if not query:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and query"
+                error="Missing required parameter: query"
             )
         
         try:
@@ -356,12 +344,6 @@ class ListTriplesFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="subject",
                     type="string",
                     description="Subject IRI (optional)",
@@ -394,12 +376,6 @@ class ListTriplesFunction(BaseFunction):
         property_ = kwargs.get("property")
         object_ = kwargs.get("object")
         limit = kwargs.get("limit", 10)
-        
-        if not kg:
-            return FunctionResult(
-                success=False,
-                error="Missing required parameter: kg"
-            )
         
         # At least one constraint should be provided
         if not subject and not property_ and not object_:
@@ -500,12 +476,6 @@ class ExecuteQueryFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="sparql",
                     type="string",
                     description="SPARQL query to execute",
@@ -525,10 +495,10 @@ class ExecuteQueryFunction(BaseFunction):
         sparql = kwargs.get("sparql")
         limit = kwargs.get("limit")
         
-        if not kg or not sparql:
+        if not sparql:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg and sparql"
+                error="Missing required parameter: sparql"
             )
         
         try:

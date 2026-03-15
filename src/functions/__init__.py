@@ -12,7 +12,6 @@ from .exploration import (
     ExplorePropertyValuesFunction
 )
 from .answer import AnswerFunction
-from .examples import GetSimilarExamplesFunction, GetPropertyPatternsFunction
 
 __all__ = [
     # Core classes
@@ -29,7 +28,5 @@ __all__ = [
     'GetEntityPropertiesFunction',
     'FindRelationshipPathsFunction',
     'ExplorePropertyValuesFunction',
-    'AnswerFunction',
-    'GetSimilarExamplesFunction',
-    'GetPropertyPatternsFunction',
+    'AnswerFunction'
 ]

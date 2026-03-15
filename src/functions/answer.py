@@ -19,12 +19,6 @@ class AnswerFunction(BaseFunction):
             description=self.description,
             parameters=[
                 FunctionParameter(
-                    name="kg",
-                    type="string",
-                    description="Knowledge graph name",
-                    required=True
-                ),
-                FunctionParameter(
                     name="sparql",
                     type="string",
                     description="Final SPARQL query",
@@ -51,10 +45,10 @@ class AnswerFunction(BaseFunction):
         answer = kwargs.get("answer")
         explanation = kwargs.get("explanation", "")
         
-        if not kg or not sparql or not answer:
+        if not sparql or not answer:
             return FunctionResult(
                 success=False,
-                error="Missing required parameters: kg, sparql, and answer"
+                error="Missing required parameters: sparql and answer"
             )
         
         return FunctionResult(

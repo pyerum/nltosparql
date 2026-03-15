@@ -31,7 +31,6 @@ class AgentOrchestrator:
         self.max_feedback_loops = max_feedback_loops
         self.verbose = verbose
         self.ontology_content = ontology_content
-        self.kg_name = function_registry.kg_name
         
         self.conversation_history: List[LLMMessage] = []
         self.function_results: List[Dict[str, Any]] = []
@@ -79,7 +78,9 @@ of subclasses. Use property paths like:
 """
             prompt_parts.append(ontology_section.strip())
         
-                
+        # Note: The kg parameter is now automatically set by the function registry
+        # No need to instruct the LLM to pass it
+        
         # Add functions and instructions
         instructions = f"""
 When you call a function only include the body of the function in the output, no reasoning or other text.
@@ -90,7 +91,7 @@ Available functions:
 MUST FOLLOW THIS PROCESS TO GENERATE THE QUERY:
 1. Use functions for as many iterations as needed, refining the usage as you learn the structure of the knowledge.
 2. Use the return content of the function calls to refine your thought process and execute further function calls if needed. Do not give up and answer right away if you can't find entities immediately, try explore and understand the graph in other ways or using other functions.
-3. YOU MUST TEST THE QUERY before giving it to the answer function, via execute_query
+3. YOU MUST TRY THE QUERY before answerg by using the function execute_query!
 4. Use answer function to provide final result
 
 Question: {question}

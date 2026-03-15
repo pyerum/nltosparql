@@ -1,0 +1,55 @@
+@prefix : <http://example.org/onto#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# --- CLASSI ---
+:Persona a owl:Class ;
+    rdfs:label "Persona"@it ;
+    rdfs:comment "Classe base per tutti gli individui umani"@it .
+
+:Ricercatore rdfs:subClassOf :Persona ;
+    rdfs:label "Ricercatore"@it .
+
+:Studente rdfs:subClassOf :Persona ;
+    rdfs:label "Studente"@it .
+
+:Progetto a owl:Class ;
+    rdfs:label "Progetto di Ricerca"@it .
+
+:Pubblicazione a owl:Class ;
+    rdfs:label "Pubblicazione Scientifica"@it .
+
+:Articolo rdfs:subClassOf :Pubblicazione ;
+    rdfs:label "Articolo"@it .
+
+# --- PROPRIETÀ ---
+:partecipaA a owl:ObjectProperty ;
+    rdfs:label "partecipa a"@it ;
+    rdfs:domain :Persona ;
+    rdfs:range :Progetto .
+
+:haRuolo a owl:DatatypeProperty ;
+    rdfs:label "ha ruolo"@it ;
+    rdfs:domain :partecipaA ; # In un KG semplice spesso si usa direttamente sulla persona
+    rdfs:range xsd:string .
+
+:haSupervisore a owl:ObjectProperty ;
+    rdfs:label "ha supervisore"@it ;
+    rdfs:domain :Studente ;
+    rdfs:range :Ricercatore .
+
+:haAutore a owl:ObjectProperty ;
+    rdfs:label "ha autore"@it ;
+    rdfs:domain :Pubblicazione ;
+    rdfs:range :Persona .
+
+:titolo a owl:DatatypeProperty ;
+    rdfs:label "titolo"@it ;
+    rdfs:domain :Pubblicazione ;
+    rdfs:range xsd:string .
+
+:annoPubblicazione a owl:DatatypeProperty ;
+    rdfs:label "anno pubblicazione"@it ;
+    rdfs:range xsd:integer .

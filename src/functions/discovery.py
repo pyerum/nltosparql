@@ -410,11 +410,22 @@ class SearchPropertyByConceptFunction(BaseFunction):
                             description = row.get('description', '')
                             usage_count = row.get('usage_count', '0')
                             
+                            # Extract property ID from URI if possible
+                            property_id = ''
+                            if '/prop/direct/' in prop:
+                                property_id = prop.split('/prop/direct/')[-1]
+                            else:
+                                # Try to get the last part of the URI
+                                parts = prop.rstrip('/').split('/')
+                                if parts:
+                                    property_id = parts[-1]
+                            
                             properties.append({
                                 'property': prop,
                                 'label': label,
                                 'description': description,
-                                'usage_count': int(usage_count) if usage_count.isdigit() else 0
+                                'usage_count': int(usage_count) if usage_count.isdigit() else 0,
+                                'property_id': property_id
                             })
                         
                         return FunctionResult(

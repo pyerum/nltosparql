@@ -62,7 +62,7 @@ class AgentOrchestrator:
         prompt_parts = []
         
         # Base prompt
-        prompt_parts.append(f"Generate SPARQL queries to answer questions about {kg_name}.")
+        prompt_parts.append(f"Generate SPARQL queries to answer questions using the selected KG.")
         
         # Add ontology information if available
         if self.ontology_content:
@@ -75,6 +75,10 @@ When generating queries, please respect the ontology definitions, including clas
 """
             prompt_parts.append(ontology_section.strip())
         
+        # Add important note about using the correct knowledge graph
+        kg_note = f"""Use "{kg_name}" as the value for the "kg" parameter in ALL function calls."""
+        prompt_parts.append(kg_note.strip())
+        
         # Add functions and instructions
         instructions = f"""
 When you call a function only include the body of the function in the output, no reasoning or other text.
@@ -82,17 +86,15 @@ When you call a function only include the body of the function in the output, no
 Available functions:
 {functions_prompt}
 
-Process:
-1. Use search_entity to find entities
-2. Use discover_properties to find relevant properties
-3. Use get_entity_properties to explore entity structure
-4. Create SPARQL query
-5. Test with execute_query
-6. Use answer to provide final result
+YOU HAVE TO FOLLOW THIS PROCESS TO GENERATE THE QUERY:
+1. Use functions for as many iterations as needed, refining the usage as you learn the structure of the knowledge.
+2. Use the return of the function calls to refine your thought process and execute further function calls if needed. Do not give up and answer right away if you can't find entities immediately, try explore and understand the graph in other ways or using other functions.
+3. Create SPARQL query
+4. YOU MUST TEST THE QUERY with execute_query
+5. Use answer function to provide final result
 
 Question: {question}
 
-Begin by searching for the main entity.
 """
         prompt_parts.append(instructions.strip())
         

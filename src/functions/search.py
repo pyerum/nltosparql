@@ -118,6 +118,8 @@ class SearchEntityFunction(BaseFunction):
                     )
                 
                 # Generic search for other knowledge graphs
+                # Search across any property with a literal value matching the query
+                # This makes it work with any ontology regardless of label property names
                 search_query = f"""
                 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
                 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -125,17 +127,21 @@ class SearchEntityFunction(BaseFunction):
                 
                 SELECT DISTINCT ?entity ?label ?description WHERE {{
                   {{
-                    ?entity rdfs:label ?label .
-                    FILTER(REGEX(LCASE(?label), LCASE("{query}")))
+                    # Search for entities with standard label properties
+                    ?entity rdfs:label|skos:altLabel|schema:name ?label .
+                    FILTER(CONTAINS(LCASE(STR(?label)), LCASE("{query}")))
                   }} UNION {{
-                    ?entity skos:altLabel ?label .
-                    FILTER(REGEX(LCASE(?label), LCASE("{query}")))
-                  }} UNION {{
-                    ?entity schema:name ?label .
-                    FILTER(REGEX(LCASE(?label), LCASE("{query}")))
+                    # Search for entities where any property has a literal value matching the query
+                    ?entity ?prop ?literal .
+                    FILTER(CONTAINS(LCASE(STR(?literal)), LCASE("{query}")))
+                    # Get label from standard properties if available, otherwise use the literal
+                    OPTIONAL {{ ?entity rdfs:label ?std_label . }}
+                    OPTIONAL {{ ?entity skos:altLabel ?std_label . }}
+                    OPTIONAL {{ ?entity schema:name ?std_label . }}
+                    BIND(COALESCE(?std_label, ?literal) AS ?label)
                   }}
+                  # Get description if available
                   OPTIONAL {{ ?entity schema:description ?description . }}
-                  FILTER(LANG(?label) = "en" || LANG(?label) = "")
                 }}
                 LIMIT {limit}
                 """
@@ -151,10 +157,23 @@ class SearchEntityFunction(BaseFunction):
                             label = row.get('label', '')
                             description = row.get('description', '')
                             
+                            # Extract entity ID from URI if possible (for Wikidata-style URIs)
+                            entity_id = ''
+                            if '/entity/' in entity:
+                                entity_id = entity.split('/entity/')[-1]
+                            elif '/prop/direct/' in entity:
+                                entity_id = entity.split('/prop/direct/')[-1]
+                            else:
+                                # Try to get the last part of the URI
+                                parts = entity.rstrip('/').split('/')
+                                if parts:
+                                    entity_id = parts[-1]
+                            
                             formatted_results.append({
                                 'entity': entity,
                                 'label': label,
-                                'description': description
+                                'description': description,
+                                'entity_id': entity_id
                             })
                         
                         return FunctionResult(
@@ -251,11 +270,17 @@ class SearchPropertyFunction(BaseFunction):
             
             SELECT DISTINCT ?property ?label ?description WHERE {{
               {{
-                ?property rdfs:label ?label .
-                FILTER(CONTAINS(LCASE(?label), LCASE("{query}")))
+                # Search for properties with standard label properties
+                ?property rdfs:label|skos:altLabel ?label .
+                FILTER(CONTAINS(LCASE(STR(?label)), LCASE("{query}")))
               }} UNION {{
-                ?property skos:altLabel ?label .
-                FILTER(CONTAINS(LCASE(?label), LCASE("{query}")))
+                # Search for properties where any property has a literal value matching the query
+                ?property ?prop ?literal .
+                FILTER(CONTAINS(LCASE(STR(?literal)), LCASE("{query}")))
+                # Get label from standard properties if available, otherwise use the literal
+                OPTIONAL {{ ?property rdfs:label ?std_label . }}
+                OPTIONAL {{ ?property skos:altLabel ?std_label . }}
+                BIND(COALESCE(?std_label, ?literal) AS ?label)
               }}
               OPTIONAL {{ ?property rdfs:comment ?description . }}
               FILTER(LANG(?label) = "en" || LANG(?label) = "")
@@ -275,10 +300,21 @@ class SearchPropertyFunction(BaseFunction):
                         label = row.get('label', '')
                         description = row.get('description', '')
                         
+                        # Extract property ID from URI if possible
+                        property_id = ''
+                        if '/prop/direct/' in property_uri:
+                            property_id = property_uri.split('/prop/direct/')[-1]
+                        else:
+                            # Try to get the last part of the URI
+                            parts = property_uri.rstrip('/').split('/')
+                            if parts:
+                                property_id = parts[-1]
+                        
                         formatted_results.append({
                             'property': property_uri,
                             'label': label,
-                            'description': description
+                            'description': description,
+                            'property_id': property_id
                         })
                     
                     return FunctionResult(

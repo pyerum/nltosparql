@@ -40,7 +40,7 @@ def load_config() -> dict:
               type=click.Choice(['ollama', 'openrouter']),
               help='LLM provider to use (ollama or openrouter)')
 @click.option('--endpoint', '-e', default='wikidata',
-              help='QLever endpoint to use (e.g., wikidata, dblp, dbpedia)')
+              help='Endpoint to use (e.g., wikidata, dblp, dbpedia)')
 @click.option('--model', '-m', default=None,
               help='Specific model to use (overrides config)')
 @click.option('--verbose', '-v', is_flag=True,

@@ -25,6 +25,10 @@ endpoints:
   freebase: "https://qlever.dev/api/freebase"
   uniprot: "https://qlever.dev/api/uniprot"
   osm: "https://qlever.dev/api/osm-planet"
+  testing: "http://localhost:3030/kg-prova/sparql"
+  test-rail: "http://localhost:3030/rail/sparql"
+  test-wine: "http://localhost:3030/wine/sparql"
+  test-uni: "http://localhost:3030/uni/sparql"
 
 # Function Calling Configuration
 functions:

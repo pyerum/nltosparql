@@ -116,7 +116,7 @@ class GetEntityPropertiesFunction(BaseFunction):
             }}
             GROUP BY ?property
             ORDER BY DESC(?value_count)
-            LIMIT 200
+            LIMIT 500
             """
             
             async with QLeverClient(endpoint_url) as client:
@@ -163,6 +163,50 @@ class GetEntityPropertiesFunction(BaseFunction):
                                         }
                                 except Exception:
                                     pass
+                else:
+                    # For non-Wikidata knowledge graphs, fetch property labels using SPARQL
+                    # Extract property URIs
+                    property_uris = []
+                    for prop_row in properties_result.results:
+                        prop_uri = prop_row.get('property', '')
+                        if prop_uri:
+                            property_uris.append(prop_uri)
+                    
+                    # Fetch labels for properties using SPARQL
+                    if property_uris:
+                        # Build a query to get labels for all properties
+                        # Use UNION to search for rdfs:label, skos:altLabel, or any literal value
+                        prop_uris_str = " ".join([f"<{uri}>" for uri in property_uris])
+                        labels_query = f"""
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                        
+                        SELECT ?property ?label WHERE {{
+                          {{ ?property rdfs:label ?label . }}
+                          UNION {{ ?property skos:altLabel ?label . }}
+                          FILTER(?property IN ({prop_uris_str}))
+                        }}
+                        """
+                        
+                        labels_result = await client.execute_query(labels_query)
+                        if labels_result.success and labels_result.results:
+                            for row in labels_result.results:
+                                prop_uri = row.get('property', '')
+                                label = row.get('label', '')
+                                if prop_uri and label:
+                                    property_labels[prop_uri] = label
+                        
+                        # For properties without labels, use the local name from the URI
+                        for prop_uri in property_uris:
+                            if prop_uri not in property_labels:
+                                # Extract local name from URI (e.g., http://example.org/onto#nome -> nome)
+                                if '#' in prop_uri:
+                                    local_name = prop_uri.split('#')[-1]
+                                elif '/' in prop_uri:
+                                    local_name = prop_uri.rstrip('/').split('/')[-1]
+                                else:
+                                    local_name = prop_uri
+                                property_labels[prop_uri] = local_name
                 
                 # Get property details and example values for each property
                 properties_with_details = []
@@ -176,10 +220,14 @@ class GetEntityPropertiesFunction(BaseFunction):
                     if '/prop/direct/' in prop_uri:
                         prop_id = prop_uri.split('/prop/direct/')[-1]
                     
-                    # Get label from Wikidata API (if available) or use empty
+                    # Get label from Wikidata API (if available) or use property_labels for non-Wikidata
                     label = ''
-                    if kg == "wikidata" and prop_id in property_labels:
-                        label = property_labels[prop_id].get('label', '')
+                    if kg == "wikidata":
+                        if prop_id in property_labels:
+                            label = property_labels[prop_id].get('label', '')
+                    else:
+                        # For non-Wikidata, use the property URI as key
+                        label = property_labels.get(prop_uri, '')
                     
                     # Skip if property filter is specified and doesn't match
                     if property_filter and property_filter.lower() not in label.lower():

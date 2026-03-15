@@ -1,0 +1,125 @@
+@prefix : <http://example.org/university-ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Classi
+:University a owl:Class ;
+    rdfs:label "University"@en .
+
+:Department a owl:Class ;
+    rdfs:label "Department"@en .
+
+:Person a owl:Class ;
+    rdfs:label "Person"@en .
+
+:Student a owl:Class ;
+    rdfs:subClassOf :Person ;
+    rdfs:label "Student"@en .
+
+:Professor a owl:Class ;
+    rdfs:subClassOf :Person ;
+    rdfs:label "Professor"@en .
+
+:GraduateStudent a owl:Class ;
+    rdfs:subClassOf :Student ;
+    rdfs:label "Graduate Student"@en .
+
+:UndergraduateStudent a owl:Class ;
+    rdfs:subClassOf :Student ;
+    rdfs:label "Undergraduate Student"@en .
+
+:Course a owl:Class ;
+    rdfs:label "Course"@en .
+
+:Publication a owl:Class ;
+    rdfs:label "Publication"@en .
+
+:ResearchGroup a owl:Class ;
+    rdfs:label "Research Group"@en .
+
+# Proprietà oggetto
+:hasDepartment a owl:ObjectProperty ;
+    rdfs:domain :University ;
+    rdfs:range :Department ;
+    rdfs:label "has department"@en .
+
+:worksFor a owl:ObjectProperty ;
+    rdfs:domain :Professor ;
+    rdfs:range :University ;
+    rdfs:label "works for"@en .
+
+:memberOf a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :Department ;
+    rdfs:label "member of"@en .
+
+:teaches a owl:ObjectProperty ;
+    rdfs:domain :Professor ;
+    rdfs:range :Course ;
+    rdfs:label "teaches"@en .
+
+:takesCourse a owl:ObjectProperty ;
+    rdfs:domain :Student ;
+    rdfs:range :Course ;
+    rdfs:label "takes course"@en .
+
+:advisor a owl:ObjectProperty ;
+    rdfs:domain :Student ;
+    rdfs:range :Professor ;
+    rdfs:label "has advisor"@en .
+
+:publicationAuthor a owl:ObjectProperty ;
+    rdfs:domain :Publication ;
+    rdfs:range :Person ;
+    rdfs:label "has author"@en .
+
+:researchArea a owl:ObjectProperty ;
+    rdfs:domain :Department ;
+    rdfs:range :ResearchField ;
+    rdfs:label "has research area"@en .
+
+:hasAffiliation a owl:ObjectProperty ;
+    rdfs:domain :Person ;
+    rdfs:range :University ;
+    rdfs:label "has affiliation"@en .
+
+# Proprietà datatype
+:hasName a owl:DatatypeProperty ;
+    rdfs:domain owl:Thing ;
+    rdfs:range xsd:string ;
+    rdfs:label "has name"@en .
+
+:hasEmail a owl:DatatypeProperty ;
+    rdfs:domain :Person ;
+    rdfs:range xsd:string ;
+    rdfs:label "has email"@en .
+
+:hasTitle a owl:DatatypeProperty ;
+    rdfs:domain :Publication ;
+    rdfs:range xsd:string ;
+    rdfs:label "has title"@en .
+
+:publicationYear a owl:DatatypeProperty ;
+    rdfs:domain :Publication ;
+    rdfs:range xsd:gYear ;
+    rdfs:label "publication year"@en .
+
+:enrollmentYear a owl:DatatypeProperty ;
+    rdfs:domain :Student ;
+    rdfs:range xsd:gYear ;
+    rdfs:label "enrollment year"@en .
+
+:graduationYear a owl:DatatypeProperty ;
+    rdfs:domain :Student ;
+    rdfs:range xsd:gYear ;
+    rdfs:label "graduation year"@en .
+
+:credits a owl:DatatypeProperty ;
+    rdfs:domain :Course ;
+    rdfs:range xsd:integer ;
+    rdfs:label "credits"@en .
+
+:ResearchField a owl:Class ;
+    rdfs:label "Research Field"@en .

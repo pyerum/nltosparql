@@ -71,7 +71,7 @@ IMPORTANT: The following ontology defines the schema and concepts for this knowl
 
 {self.ontology_content}
 
-When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology. Remember to use PREFIXes when possible.
+When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology.
 """
             prompt_parts.append(ontology_section.strip())
         
@@ -82,11 +82,12 @@ When you call a function only include the body of the function in the output, no
 Available functions:
 {functions_prompt}
 
-MUST FOLLOW THIS PROCESS TO GENERATE THE QUERY:
-1. Use functions for as many iterations as needed, refining the usage as you learn the structure of the knowledge.
+How to get to a proper query:
+1. Use functions for as many iterations as needed, refining the usage as you learn the structure of the knowledge. Remember to use PREFIXes when possible.
 2. Use the return content of the function calls to refine your thought process and execute further function calls if needed. Do not give up and answer right away if you can't find entities immediately, try explore and understand the graph in other ways or using other functions.
-3. YOU MUST TRY THE QUERY before answerg by using the function execute_query!
-4. Use answer function to provide final result
+3. You have a limited number of iterations you can perform, so do not perfrom unnecessary queries, if you think you have the answer.
+4. YOU MUST TRY THE QUERY before answerg by using the function execute_query!
+5. Use answer function to provide final result
 
 Question: {question}
 

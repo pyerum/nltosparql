@@ -3,12 +3,12 @@
 # LLM Configuration
 llm:
   # Default provider options: "openrouter" or "ollama"
-  provider: "openrouter"
+  provider: "ollama"
   
   # Model configurations per provider
   models:
     openrouter:
-      model: "qwen/qwen3-32b"
+      model: "openrouter/hunter-alpha"
       temperature: 0.1
       max_tokens: 8192
       base_url: "https://openrouter.ai/api/v1"
@@ -19,18 +19,16 @@ llm:
 
 # QLever Endpoints
 endpoints:
-  maxxi: "http://localhost:3030/maxxi-test"
-  mema: "http://localhost:3030/memav7"
-  # wikidata: "https://qlever.dev/api/wikidata"
-  # dblp: "https://qlever.dev/api/dblp"
-  # dbpedia: "https://qlever.dev/api/dbpedia"
-  # freebase: "https://qlever.dev/api/freebase"
-  # uniprot: "https://qlever.dev/api/uniprot"
-  # osm: "https://qlever.dev/api/osm-planet"
-  # testing: "http://localhost:3030/kg-prova/sparql"
-  # test-rail: "http://localhost:3030/rail/sparql"
-  # test-wine: "http://localhost:3030/wine/sparql"
-  # test-uni: "http://localhost:3030/uni/sparql"
+  wikidata: "https://qlever.dev/api/wikidata"
+  dblp: "https://qlever.dev/api/dblp"
+  dbpedia: "https://qlever.dev/api/dbpedia"
+  freebase: "https://qlever.dev/api/freebase"
+  uniprot: "https://qlever.dev/api/uniprot"
+  osm: "https://qlever.dev/api/osm-planet"
+  testing: "http://localhost:3030/kg-prova/sparql"
+  test-rail: "http://localhost:3030/rail/sparql"
+  test-wine: "http://localhost:3030/wine/sparql"
+  test-uni: "http://localhost:3030/uni/sparql"
 
 # Function Calling Configuration
 functions:

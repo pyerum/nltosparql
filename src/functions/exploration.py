@@ -384,7 +384,7 @@ class FindRelationshipPathsFunction(BaseFunction):
                 
                 if result.success:
                     paths = []
-                    for row in result.results:
+                    for row in result.results: # type: ignore
                         path = row.get('path', '')
                         path_length = int(row.get('path_length', '0')) if row.get('path_length', '0').isdigit() else 0
                         

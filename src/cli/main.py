@@ -344,7 +344,7 @@ def test(provider: str):
                 messages = [LLMMessage(role="user", content="Hello, are you working?")]
                 response = await client.generate(messages)
                 click.echo(f"✓ OpenRouter connection successful")
-                click.echo(f"  Response: {response.content[:100]}...")
+                click.echo(f"  Response: {response.content[:100]}...") # type: ignore
             except Exception as e:
                 click.echo(f"✗ OpenRouter connection failed: {e}")
         
@@ -358,7 +358,7 @@ def test(provider: str):
                 messages = [LLMMessage(role="user", content="Hello, are you working?")]
                 response = await client.generate(messages)
                 click.echo(f"✓ Ollama connection successful")
-                click.echo(f"  Response: {response.content[:100]}...")
+                click.echo(f"  Response: {response.content[:100]}...") # type: ignore
             except Exception as e:
                 click.echo(f"✗ Ollama connection failed: {e}")
         

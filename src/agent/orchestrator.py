@@ -48,12 +48,12 @@ class AgentOrchestrator:
         # Get available knowledge graphs from config
         import yaml
         import os
-        config_path = os.path.join(os.path.dirname(__file__), "../../config/default.yaml")
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f)
+     #   config_path = os.path.join(os.path.dirname(__file__), "../../config/default.yaml")
+        # with open(config_path, 'r') as f:
+        #     config = yaml.safe_load(f)
         
-        endpoints = config.get('endpoints', {})
-        kg_list = ", ".join(endpoints.keys())
+        # endpoints = config.get('endpoints', {})
+        # kg_list = ", ".join(endpoints.keys())
         
         # Format functions for prompt
         functions_prompt = self._format_functions_for_prompt()

@@ -438,7 +438,7 @@ class ListTriplesFunction(BaseFunction):
                 if result.success:
                     # Format results
                     formatted_results = []
-                    for row in result.results:
+                    for row in result.results: # type: ignore
                         formatted_results.append({
                             'subject': row.get('s', ''),
                             'property': row.get('p', ''),

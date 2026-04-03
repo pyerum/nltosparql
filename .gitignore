@@ -38,6 +38,7 @@ Thumbs.db
 *.log
 logs/
 
-# Papers directory (contains PDFs)
+# Other
 papers/
 tesi.md
+dataset-generator.py

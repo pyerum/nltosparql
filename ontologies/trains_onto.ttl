@@ -5,92 +5,25 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 # Classi
-:Train a owl:Class ;
-    rdfs:label "Train"@en ;
-    rdfs:comment "A train service"@en .
+:Train a owl:Class ; rdfs:label "Train"@en .
+:Station a owl:Class ; rdfs:label "Station"@en .
+:City a owl:Class ; rdfs:label "City"@en .
+:Country a owl:Class ; rdfs:label "Country"@en .
+:TrainType a owl:Class ; rdfs:label "Train Type"@en .
 
-:Station a owl:Class ;
-    rdfs:label "Station"@en ;
-    rdfs:comment "A railway station"@en .
+# Proprietà Oggetto
+:departsFrom a owl:ObjectProperty ; rdfs:domain :Train ; rdfs:range :Station .
+:arrivesAt a owl:ObjectProperty ; rdfs:domain :Train ; rdfs:range :Station .
+:hasType a owl:ObjectProperty ; rdfs:domain :Train ; rdfs:range :TrainType .
+:locatedIn a owl:ObjectProperty ; rdfs:domain :Station ; rdfs:range :City .
+:cityInCountry a owl:ObjectProperty ; rdfs:domain :City ; rdfs:range :Country .
+:passesThrough a owl:ObjectProperty ; rdfs:domain :Train ; rdfs:range :Station .
 
-:Route a owl:Class ;
-    rdfs:label "Route"@en ;
-    rdfs:comment "A train route between stations"@en .
-
-:TrainType a owl:Class ;
-    rdfs:label "Train Type"@en ;
-    rdfs:comment "Type of train service"@en .
-
-:City a owl:Class ;
-    rdfs:label "City"@en ;
-    rdfs:comment "A city with railway stations"@en .
-
-:Country a owl:Class ;
-    rdfs:label "Country"@en .
-
-# Proprietà oggetto
-:departsFrom a owl:ObjectProperty ;
-    rdfs:domain :Train ;
-    rdfs:range :Station ;
-    rdfs:label "departs from"@en .
-
-:arrivesAt a owl:ObjectProperty ;
-    rdfs:domain :Train ;
-    rdfs:range :Station ;
-    rdfs:label "arrives at"@en .
-
-:hasType a owl:ObjectProperty ;
-    rdfs:domain :Train ;
-    rdfs:range :TrainType ;
-    rdfs:label "has type"@en .
-
-:locatedIn a owl:ObjectProperty ;
-    rdfs:domain :Station ;
-    rdfs:range :City ;
-    rdfs:label "located in"@en .
-
-:cityInCountry a owl:ObjectProperty ;
-    rdfs:domain :City ;
-    rdfs:range :Country ;
-    rdfs:label "in country"@en .
-
-:passesThrough a owl:ObjectProperty ;
-    rdfs:domain :Train ;
-    rdfs:range :Station ;
-    rdfs:label "passes through"@en .
-
-# Proprietà datatype
-:hasNumber a owl:DatatypeProperty ;
-    rdfs:domain :Train ;
-    rdfs:range xsd:string ;
-    rdfs:label "has number"@en .
-
-:departureTime a owl:DatatypeProperty ;
-    rdfs:domain :Train ;
-    rdfs:range xsd:time ;
-    rdfs:label "departure time"@en .
-
-:arrivalTime a owl:DatatypeProperty ;
-    rdfs:domain :Train ;
-    rdfs:range xsd:time ;
-    rdfs:label "arrival time"@en .
-
-:duration a owl:DatatypeProperty ;
-    rdfs:domain :Train ;
-    rdfs:range xsd:integer ;
-    rdfs:label "duration in minutes"@en .
-
-:price a owl:DatatypeProperty ;
-    rdfs:domain :Train ;
-    rdfs:range xsd:decimal ;
-    rdfs:label "price in euros"@en .
-
-:hasName a owl:DatatypeProperty ;
-    rdfs:domain :Station ;
-    rdfs:range xsd:string ;
-    rdfs:label "has name"@en .
-
-:hasPopulation a owl:DatatypeProperty ;
-    rdfs:domain :City ;
-    rdfs:range xsd:integer ;
-    rdfs:label "has population"@en .
+# Proprietà Datatype
+:hasNumber a owl:DatatypeProperty ; rdfs:domain :Train ; rdfs:range xsd:string .
+:departureTime a owl:DatatypeProperty ; rdfs:domain :Train ; rdfs:range xsd:time .
+:arrivalTime a owl:DatatypeProperty ; rdfs:domain :Train ; rdfs:range xsd:time .
+:duration a owl:DatatypeProperty ; rdfs:domain :Train ; rdfs:range xsd:integer .
+:price a owl:DatatypeProperty ; rdfs:domain :Train ; rdfs:range xsd:decimal .
+:hasName a owl:DatatypeProperty ; rdfs:domain :Station ; rdfs:range xsd:string .
+:hasPopulation a owl:DatatypeProperty ; rdfs:domain :City ; rdfs:range xsd:integer .

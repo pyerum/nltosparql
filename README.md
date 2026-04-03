@@ -1,14 +1,13 @@
 # NLtoSPARQL: Natural Language to SPARQL Query Generation
 
-A proof-of-concept system for generating SPARQL queries from natural language input using Large Language Models (LLMs) with function-calling capabilities. Supports both cloud LLM APIs (via OpenRouter) and local models (via Ollama). Currently works with wikidata only.
+A proof-of-concept system for generating SPARQL queries from natural language input using Large Language Models (LLMs) with function-calling capabilities. Supports both cloud LLM APIs (via OpenRouter) and local models (via Ollama).
 
 ## Features
 
 - **Function-Calling LLMs**: Implements GRASP-inspired approach with functions for exploring knowledge graphs
 - **Multi-LLM Support**: Switch between models served locally by Ollama or in the cloud via OpenRouter
-- **QLever Integration**: Works with QLever SPARQL endpoints
+- **Endpoints Integration**: Works with any SPARQL endpoint (including an experimental client for the QLever engine)
 - **Ontology Support**: Use custom ontologies to guide query generation
-- **Query Validation**: Basic SPARQL syntax validation (IN IMPLEMENTATION)
 - **CLI Interface**: User interaction happens via cli, --verbose strongly suggested
 
 ## Architecture
@@ -49,6 +48,8 @@ Edit `config/default.yaml` or set environment variables:
 
 - `OLLAMA_HOST`: Ollama server URL (default: http://localhost:11434)
 - `QLEVER_ENDPOINT`: Default QLever endpoint
+
+For usage with ollama it is strongly recommended to set OLLAMA_CONTEXT_LENGTH to a minimum of 16k in the environment where ollama is deployed.
 
 ## Usage
 

@@ -261,22 +261,23 @@ class SearchPropertyFunction(BaseFunction):
                 # Search for properties with standard label properties
                 ?property rdfs:label|skos:altLabel ?label .
                 FILTER(CONTAINS(LCASE(STR(?label)), LCASE("{query}")))
+                FILTER(LANG(?label) = "en" || LANG(?label) = "")
               }} UNION {{
                 # Search for properties where any property has a literal value matching the query
                 ?property ?prop ?literal .
                 FILTER(CONTAINS(LCASE(STR(?literal)), LCASE("{query}")))
                 # Get label from standard properties if available, otherwise use the literal
-                OPTIONAL {{ ?property rdfs:label ?std_label . }}
-                OPTIONAL {{ ?property skos:altLabel ?std_label . }}
+                OPTIONAL {{ ?property rdfs:label ?std_label . FILTER(LANG(?std_label) = "en" || LANG(?std_label) = "") }}
+                OPTIONAL {{ ?property skos:altLabel ?std_label . FILTER(LANG(?std_label) = "en" || LANG(?std_label) = "") }}
                 BIND(COALESCE(?std_label, ?literal) AS ?label)
               }} UNION {{
                 # Search in the property URI itself
+                ?s ?property ?o .
                 FILTER(CONTAINS(LCASE(STR(?property)), LCASE("{query}")))
-                OPTIONAL {{ ?property rdfs:label ?label . }}
-                OPTIONAL {{ ?property skos:altLabel ?label . }}
+                OPTIONAL {{ ?property rdfs:label ?label . FILTER(LANG(?label) = "en" || LANG(?label) = "") }}
+                OPTIONAL {{ ?property skos:altLabel ?label . FILTER(LANG(?label) = "en" || LANG(?label) = "") }}
               }}
               OPTIONAL {{ ?property rdfs:comment ?description . }}
-              FILTER(LANG(?label) = "en" || LANG(?label) = "")
               FILTER(STRSTARTS(STR(?property), "http://www.w3.org/1999/02/22-rdf-syntax-ns#") = false)
             }}
             LIMIT {limit}

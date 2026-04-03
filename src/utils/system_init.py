@@ -112,7 +112,7 @@ def _load_ontology_content(ontology_path: str) -> str:
 def create_agent(
     provider: str = "ollama",
     model: Optional[str] = None,
-    max_iterations: int = 20,
+    max_iterations: int = None,
     enable_feedback: bool = True,
     max_feedback_loops: int = 2,
     verbose: bool = False,
@@ -125,7 +125,7 @@ def create_agent(
     Args:
         provider: LLM provider
         model: Specific model to use
-        max_iterations: Maximum iterations for agent
+        max_iterations: Maximum iterations for agent (if None, uses config value)
         enable_feedback: Whether to enable feedback mechanism
         max_feedback_loops: Maximum feedback loops
         verbose: Whether to enable verbose logging
@@ -136,6 +136,19 @@ def create_agent(
         AgentOrchestrator instance
     """
     config = load_config()
+    
+    # Read agent configuration from config
+    agent_config = config.get('agent', {}) or {}
+    
+    # Use config value if max_iterations not specified
+    if max_iterations is None:
+        max_iterations = agent_config.get('max_iterations', 20)
+    
+    # Use config values if not specified
+    if enable_feedback:
+        enable_feedback = agent_config.get('enable_feedback', True)
+    if max_feedback_loops == 2:
+        max_feedback_loops = agent_config.get('max_feedback_loops', 2)
     
     # Create LLM client
     llm = create_llm_client(provider=provider, model=model, config=config)

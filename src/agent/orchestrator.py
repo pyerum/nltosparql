@@ -86,8 +86,9 @@ Available functions:
 How to get to a proper query:
 1. Use functions as needed, refining the usage as you learn the structure of the knowledge.
 2. You have a limited number of iterations you can perform, so do not call unnecessary functions, if you think you have the answer.
-3. YOU MUST TRY THE QUERY before answering by using the function execute_query!
-4. If the execute_query function provides an expected result, use the answer function with the EXACT same query you just tested, do no change it! Remember to include EVERY needed PREFIXes.
+3. If a function returns an error or zero results, DO NOT run the same function with the same parameters again, try different parameters or another function.
+4. YOU MUST TRY THE QUERY before answering by using the function execute_query!
+5. If the execute_query function provides an expected result, use the answer function with the EXACT same query you just tested, do no change it! Remember to include EVERY needed PREFIXes.
 
 Question: {question}
 

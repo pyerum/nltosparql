@@ -269,6 +269,11 @@ class SearchPropertyFunction(BaseFunction):
                 OPTIONAL {{ ?property rdfs:label ?std_label . }}
                 OPTIONAL {{ ?property skos:altLabel ?std_label . }}
                 BIND(COALESCE(?std_label, ?literal) AS ?label)
+              }} UNION {{
+                # Search in the property URI itself
+                FILTER(CONTAINS(LCASE(STR(?property)), LCASE("{query}")))
+                OPTIONAL {{ ?property rdfs:label ?label . }}
+                OPTIONAL {{ ?property skos:altLabel ?label . }}
               }}
               OPTIONAL {{ ?property rdfs:comment ?description . }}
               FILTER(LANG(?label) = "en" || LANG(?label) = "")

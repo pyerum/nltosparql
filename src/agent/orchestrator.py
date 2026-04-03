@@ -62,7 +62,7 @@ class AgentOrchestrator:
         prompt_parts = []
         
         # Base prompt
-        prompt_parts.append(f"Generate a SPARQL query to answer the question, using the functions available to understand the Knowledge Graph and come to a correct query and result.")
+        prompt_parts.append(f"Generate a SPARQL query to answer the question, using the functions available to understand the Knowledge Graph as much as needed to formulate a correct query.")
         
         # Add ontology information if available
         if self.ontology_content:
@@ -72,6 +72,7 @@ IMPORTANT: The following ontology defines the schema and concepts for this knowl
 {self.ontology_content}
 
 When generating queries, please respect the ontology definitions, including class hierarchies, property domains/ranges, and relationships defined in the ontology.
+If the ontology provides enough information to formulate the correct SPARQL query you can immediately try using the execute_query function.
 """
             prompt_parts.append(ontology_section.strip())
         
@@ -83,11 +84,10 @@ Available functions:
 {functions_prompt}
 
 How to get to a proper query:
-1. Use functions for as many iterations as needed, refining the usage as you learn the structure of the knowledge. Remember to use PREFIXes when possible.
-2. Use the return content of the function calls to refine your thought process and execute further function calls if needed. Do not give up and answer right away if you can't find entities immediately, try explore and understand the graph in other ways or using other functions.
-3. You have a limited number of iterations you can perform, so do not perfrom unnecessary queries, if you think you have the answer.
-4. YOU MUST TRY THE QUERY before answerg by using the function execute_query!
-5. Use answer function to provide final result
+1. Use functions as needed, refining the usage as you learn the structure of the knowledge.
+2. You have a limited number of iterations you can perform, so do not call unnecessary functions, if you think you have the answer.
+3. YOU MUST TRY THE QUERY before answering by using the function execute_query!
+4. If the execute_query function provides an expected result, use the answer function with the EXACT same query you just tested, do no change it! Remember to include EVERY needed PREFIXes.
 
 Question: {question}
 

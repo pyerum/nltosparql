@@ -249,7 +249,11 @@ class DiscoverPropertiesFunction(BaseFunction):
 
 
 class SearchPropertyByConceptFunction(BaseFunction):
-    """Search for properties by concept across the knowledge graph."""
+    """Search for properties by concept across the knowledge graph.
+    
+    NOTE: This function is currently DISABLED and not registered in the function registry.
+    It is kept in the codebase for potential future use.
+    """
     
     def __init__(self):
         super().__init__(
@@ -443,7 +447,11 @@ class SearchPropertyByConceptFunction(BaseFunction):
 
 
 class GetPropertyDetailsFunction(BaseFunction):
-    """Get detailed information about a property."""
+    """Get detailed information about a property.
+    
+    NOTE: This function is currently DISABLED and not registered in the function registry.
+    It is kept in the codebase for potential future use.
+    """
     
     def __init__(self):
         super().__init__(

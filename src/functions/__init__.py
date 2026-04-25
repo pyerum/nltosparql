@@ -4,7 +4,7 @@ from .registry import FunctionRegistry
 from .base import BaseFunction, FunctionDefinition, FunctionParameter, FunctionResult
 
 # Import all functions
-from .search import SearchEntityFunction, SearchPropertyFunction
+from .search import SearchEntityFunction, SearchPropertyFunction, ListTriplesFunction, ExecuteQueryFunction
 from .discovery import DiscoverPropertiesFunction
 from .exploration import (
     GetEntityPropertiesFunction,

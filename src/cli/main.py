@@ -23,7 +23,7 @@ def cli():
     pass
 
 
-def load_config() -> dict:
+def _load_config() -> dict:
     """Load configuration from YAML file."""
     config_path = os.path.join(os.path.dirname(__file__), "../../config/default.yaml")
     try:
@@ -49,7 +49,7 @@ def load_config() -> dict:
               help='Path to ontology file(s) in Turtle format (relative to /ontologies)')
 def query(question: str, provider: str, endpoint: str, model: Optional[str], verbose: bool, ontologies: tuple):
     """Generate a SPARQL query for a natural language question."""
-    config = load_config()
+    config = _load_config()
     
     # Get endpoint URL
     endpoints = config.get('endpoints', {})
@@ -253,7 +253,7 @@ def endpoints():
 @endpoints.command('list')
 def endpoints_list():
     """List available QLever endpoints."""
-    config = load_config()
+    config = _load_config()
     endpoints = config.get('endpoints', {})
     
     click.echo("Available QLever endpoints:")
@@ -266,7 +266,7 @@ def endpoints_list():
               help='Endpoint to test')
 def endpoints_test(endpoint: str):
     """Test connection to a QLever endpoint."""
-    config = load_config()
+    config = _load_config()
     endpoints = config.get('endpoints', {}) or {}
     
     endpoint_url = endpoints.get(endpoint)
@@ -304,7 +304,7 @@ def endpoints_test(endpoint: str):
               help='LLM provider to test (ollama or openrouter)')
 def test(provider: str):
     """Test LLM provider connection."""
-    config = load_config()
+    config = _load_config()
     llm_config = config.get('llm', {})
     if not llm_config:
         llm_config = {}
@@ -378,7 +378,7 @@ def test(provider: str):
               help='Format the query for better readability')
 def validate(query: str, endpoint: str, explain: bool, format_query: bool):
     """Validate a SPARQL query."""
-    config = load_config()
+    config = _load_config()
     endpoints = config.get('endpoints', {}) or {}
     endpoint_url = endpoints.get(endpoint)
     

@@ -33,7 +33,6 @@ class QueryValidator:
         # Remove PREFIX declarations for checking
         check_query = query_upper
         # Remove all PREFIX declarations for checking
-        import re
         check_query = re.sub(r'PREFIX\s+\w+:\s*<[^>]+>', '', check_query)
         check_query = check_query.strip()
         

@@ -1,6 +1,5 @@
 """Search functions for exploring knowledge graphs."""
 
-import re
 from typing import Dict, List, Optional, Any
 from .base import BaseFunction, FunctionDefinition, FunctionParameter, FunctionResult
 from ..sparql.qlever_client import QLeverClient

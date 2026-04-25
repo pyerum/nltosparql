@@ -40,7 +40,7 @@ functions:
 
 # Agent Configuration
 agent:
-  max_iterations: 10
+  max_iterations: 20
   enable_validation: true
   enable_feedback: true
   max_feedback_loops: 2

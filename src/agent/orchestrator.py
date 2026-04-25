@@ -1,18 +1,22 @@
 """Agent orchestrator for NL-to-SPARQL conversion using function calling."""
 
-import asyncio
 import json
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from ..llm.base import BaseLLM, LLMMessage, LLMResponse, FunctionCall
-from ..functions.factory import create_registry
+from ..llm.base import BaseLLM, LLMMessage, LLMResponse
 from ..functions.registry import FunctionRegistry
 from ..functions.base import FunctionResult
 
 
 class AgentOrchestrator:
     """Orchestrates the NL-to-SPARQL conversion process using LLM with function calling."""
+    
+    # Keywords that indicate the LLM is trying to conclude
+    CONCLUDING_KEYWORDS = [
+        'final query', 'answer is', 'here is the sparql', 'i conclude', 
+        'i cannot', 'the answer', 'sparql query', 'query is'
+    ]
     
     def __init__(
         self,
@@ -36,6 +40,8 @@ class AgentOrchestrator:
         self.function_results: List[Dict[str, Any]] = []
         self.iteration_count = 0
         self.feedback_loops = 0
+        self._continue_prompt_count = 0
+        self._max_continue_prompts = 3
         
     def _log(self, message: str):
         """Log message if verbose mode is enabled."""
@@ -86,6 +92,7 @@ Available functions:
 How to get to a proper query:
 1. Use functions as needed, refining the usage as you learn the structure of the knowledge.
 2. You have a limited number of iterations you can perform, so do not call unnecessary functions, if you think you have the answer.
+2a. Use low limits for search, discover and list functions unless really needed. Less than 5 can be sufficient to understand how the triples are stored and save context space.
 3. If a function returns an error or zero results, DO NOT run the same function with the same parameters again, try different parameters or another function.
 4. YOU MUST TRY THE QUERY before answering by using the function execute_query!
 5. If the execute_query function provides an expected result, use the answer function with the EXACT same query you just tested, do no change it! Remember to include EVERY needed PREFIXes.
@@ -142,6 +149,7 @@ Question: {question}
         self.function_results = []
         self.iteration_count = 0
         self.feedback_loops = 0
+        self._continue_prompt_count = 0
         
         # Create system prompt
         system_prompt = self._create_system_prompt(question, kg_name)
@@ -171,18 +179,12 @@ Question: {question}
                 
                 # Add assistant message with function calls to conversation history
                 # This is needed for OpenAI tools API compatibility
+                first_call = llm_response.function_calls[0]
                 assistant_message = LLMMessage(
                     role="assistant",
                     content=llm_response.content or "",
-                    function_call=None
+                    function_call=first_call
                 )
-                
-                # If there are function calls, add them to the assistant message
-                if llm_response.function_calls:
-                    # For now, we'll just add the first function call
-                    # In a more complete implementation, we'd handle multiple tool calls
-                    first_call = llm_response.function_calls[0]
-                    assistant_message.function_call = first_call
                 
                 self.conversation_history.append(assistant_message)
                 
@@ -273,16 +275,11 @@ Question: {question}
                 
                 # Check if the response seems to be concluding WITHOUT validation
                 # We should only prompt for answer if we have validated queries
-                has_validated_query = any(
-                    f['function'] == 'execute_query' and f['success'] 
-                    for f in self.function_results
-                )
+                has_validated_query = self._has_validated_query()
                 
-                concluding_keywords = ['final query', 'answer is', 'here is the sparql', 'i conclude', 'the answer']
-                if any(keyword in llm_response.content.lower() for keyword in concluding_keywords):
+                if llm_response.content and self._is_concluding(llm_response.content):
                     if has_validated_query:
                         self._log("LLM appears to be concluding with validated query - prompting for answer function")
-                        # Prompt LLM to use answer function
                         self.conversation_history.append(
                             LLMMessage(
                                 role="user",
@@ -291,7 +288,6 @@ Question: {question}
                         )
                     else:
                         self._log("LLM appears to be concluding WITHOUT validation - prompting to validate first")
-                        # Prompt LLM to validate first
                         self.conversation_history.append(
                             LLMMessage(
                                 role="user",
@@ -304,15 +300,9 @@ Question: {question}
             if llm_response.finish_reason in ["stop", "length"] and not llm_response.function_calls:
                 self._log(f"LLM finished with reason: {llm_response.finish_reason} with no function calls")
                 
-                # Check if we have validated queries
-                has_validated_query = any(
-                    f['function'] == 'execute_query' and f['success'] 
-                    for f in self.function_results
-                )
+                has_validated_query = self._has_validated_query()
                 
-                # Check if the response seems to be concluding
-                concluding_keywords = ['final query', 'answer is', 'here is the sparql', 'i conclude', 'i cannot', 'the answer']
-                if llm_response.content and any(keyword in llm_response.content.lower() for keyword in concluding_keywords):
+                if llm_response.content and self._is_concluding(llm_response.content):
                     if has_validated_query:
                         self._log("LLM appears to be concluding with validation - prompting for answer")
                         self.conversation_history.append(
@@ -332,17 +322,34 @@ Question: {question}
                     continue
                 else:
                     # LLM stopped but didn't conclude - prompt it to continue
+                    self._continue_prompt_count += 1
+                    if self._continue_prompt_count >= self._max_continue_prompts:
+                        self._log(f"LLM stopped without concluding {self._continue_prompt_count} times - forcing timeout")
+                        return self._create_timeout_result()
+                    
                     self._log("LLM stopped without concluding - prompting to continue")
                     self.conversation_history.append(
                         LLMMessage(
                             role="user",
-                            content="Please continue with the next step. If you cannot proceed, use the cancel function."
+                            content="No function called, if you have the query and tried it with execute_query, proceed with the answer function, otherwise keep using functions to come to a correct query."
                         )
                     )
                     continue
         
         # If we reach here, we've exceeded iterations without answer/cancel
         return self._create_timeout_result()
+    
+    def _has_validated_query(self) -> bool:
+        """Check if any execute_query has succeeded in this session."""
+        return any(
+            f['function'] == 'execute_query' and f['success'] 
+            for f in self.function_results
+        )
+    
+    def _is_concluding(self, content: str) -> bool:
+        """Check if the LLM response appears to be concluding."""
+        content_lower = content.lower()
+        return any(keyword in content_lower for keyword in self.CONCLUDING_KEYWORDS)
     
     async def _get_llm_response(self) -> Optional[LLMResponse]:
         """Get response from LLM with function calling."""

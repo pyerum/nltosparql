@@ -1,0 +1,230 @@
+:root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface-light: #252542;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --accent: #4ecdc4;
+    --accent-hover: #3dbbb4;
+    --error: #ff6b6b;
+    --success: #51cf66;
+    --warning: #fcc419;
+    --border: #2d2d4a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+}
+
+header p {
+    color: var(--text-dim);
+}
+
+.form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    margin-bottom: 1rem;
+}
+
+.form-row label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-row select,
+.form-row textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-row select:focus,
+.form-row textarea:focus {
+    border-color: var(--accent);
+}
+
+.form-row textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+    background: var(--text-dim);
+    cursor: not-allowed;
+}
+
+.output-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.status-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-bar.running { color: var(--warning); }
+.status-bar.success { color: var(--success); }
+.status-bar.error { color: var(--error); }
+.status-bar.timeout { color: var(--warning); }
+.status-bar.cancelled { color: var(--text-dim); }
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.panel h2 {
+    font-size: 1rem;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.log-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.log-entry {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    border-left: 3px solid var(--border);
+}
+
+.log-entry.function-call { border-left-color: var(--accent); }
+.log-entry.function-result { border-left-color: var(--success); }
+.log-entry.function-error { border-left-color: var(--error); }
+.log-entry.reasoning { border-left-color: var(--warning); }
+
+.log-entry .meta {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+}
+
+.log-entry pre {
+    background: var(--surface-light);
+    padding: 0.5rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    color: var(--text);
+}
+
+.sparql-query {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    color: var(--accent);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.summary-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.summary-item .value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.summary-item .label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 0.25rem;
+}
+
+.breakdown-list {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.breakdown-list li {
+    list-style: none;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--border);
+}

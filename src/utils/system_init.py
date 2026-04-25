@@ -117,7 +117,8 @@ def create_agent(
     max_feedback_loops: int = 2,
     verbose: bool = False,
     kg_name: str = "wikidata",
-    ontologies: Optional[list] = None
+    ontologies: Optional[list] = None,
+    event_callback=None
 ) -> AgentOrchestrator:
     """
     Create agent orchestrator with LLM and function registry.
@@ -131,6 +132,7 @@ def create_agent(
         verbose: Whether to enable verbose logging
         kg_name: Knowledge graph name (e.g., "wikidata")
         ontologies: List of ontology file paths (relative to /ontologies directory)
+        event_callback: Optional async callback for streaming events
         
     Returns:
         AgentOrchestrator instance
@@ -179,7 +181,8 @@ def create_agent(
         enable_feedback=enable_feedback,
         max_feedback_loops=max_feedback_loops,
         verbose=verbose,
-        ontology_content=ontology_content
+        ontology_content=ontology_content,
+        event_callback=event_callback
     )
     
     return agent

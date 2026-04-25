@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLtoSPARQL</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NLtoSPARQL</h1>
+            <p>Natural Language to SPARQL query generation</p>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <div class="form-row">
+                    <label for="provider">Provider</label>
+                    <select id="provider"></select>
+                </div>
+                <div class="form-row">
+                    <label for="model">Model</label>
+                    <select id="model"></select>
+                </div>
+                <div class="form-row">
+                    <label for="endpoint">Endpoint</label>
+                    <select id="endpoint"></select>
+                </div>
+                <div class="form-row">
+                    <label for="ontology">Ontology (optional)</label>
+                    <select id="ontology">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="question">Question</label>
+                    <textarea id="question" rows="3" placeholder="e.g., What is the capital of France?"></textarea>
+                </div>
+                <button id="submit" class="btn-primary">Ask</button>
+            </section>
+
+            <section class="output-section" id="output" style="display:none;">
+                <div class="status-bar" id="status">Running...</div>
+
+                <div class="panel" id="result-panel" style="display:none;">
+                    <h2>Result</h2>
+                    <div id="result-content"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Execution Log</h2>
+                    <div id="log-content" class="log-scroll"></div>
+                </div>
+
+                <div class="panel" id="summary-panel" style="display:none;">
+                    <h2>Summary</h2>
+                    <div id="summary-content"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

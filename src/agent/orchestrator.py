@@ -26,7 +26,8 @@ class AgentOrchestrator:
         enable_feedback: bool = True,
         max_feedback_loops: int = 2,
         verbose: bool = False,
-        ontology_content: Optional[str] = None
+        ontology_content: Optional[str] = None,
+        event_callback: Optional[Any] = None
     ):
         self.llm = llm
         self.function_registry = function_registry
@@ -35,6 +36,7 @@ class AgentOrchestrator:
         self.max_feedback_loops = max_feedback_loops
         self.verbose = verbose
         self.ontology_content = ontology_content
+        self.event_callback = event_callback
         
         self.conversation_history: List[LLMMessage] = []
         self.function_results: List[Dict[str, Any]] = []
@@ -48,6 +50,11 @@ class AgentOrchestrator:
         if self.verbose:
             timestamp = datetime.now().strftime("%H:%M:%S")
             print(f"[{timestamp}] {message}")
+    
+    async def _emit(self, event_type: str, data: Dict[str, Any]):
+        """Emit an event to the callback if registered."""
+        if self.event_callback is not None:
+            await self.event_callback(event_type, data)
     
     def _create_system_prompt(self, question: str, kg_name: str) -> str:
         """Create the system prompt for the LLM."""
@@ -171,6 +178,7 @@ Question: {question}
             llm_response = await self._get_llm_response()
             
             if not llm_response:
+                await self._emit("error", {"message": "LLM failed to respond"})
                 return self._create_error_result("LLM failed to respond")
             
             # Check for function calls
@@ -178,7 +186,6 @@ Question: {question}
                 self._log(f"LLM made {len(llm_response.function_calls)} function call(s)")
                 
                 # Add assistant message with function calls to conversation history
-                # This is needed for OpenAI tools API compatibility
                 first_call = llm_response.function_calls[0]
                 assistant_message = LLMMessage(
                     role="assistant",
@@ -195,6 +202,11 @@ Question: {question}
                     arguments = function_call.arguments
                     
                     self._log(f"Executing function: {function_name} with args: {arguments}")
+                    await self._emit("function_call", {
+                        "iteration": self.iteration_count,
+                        "function": function_name,
+                        "arguments": arguments
+                    })
                     
                     # Execute function
                     result = await self.function_registry.execute_function(
@@ -211,17 +223,13 @@ Question: {question}
                         'success': result.success
                     })
                     
-                    # ADDED: Simple print of function return value
-                    if result.success:
-                        print(f"\n=== FUNCTION RETURN: {function_name} ===")
-                        print(f"Arguments: {arguments}")
-                        print(f"Return value: {result.result}")
-                        print("=" * 50 + "\n")
-                    else:
-                        print(f"\n=== FUNCTION ERROR: {function_name} ===")
-                        print(f"Arguments: {arguments}")
-                        print(f"Error: {result.error}")
-                        print("=" * 50 + "\n")
+                    await self._emit("function_result", {
+                        "iteration": self.iteration_count,
+                        "function": function_name,
+                        "success": result.success,
+                        "result": result.result if result.success else None,
+                        "error": result.error if not result.success else None
+                    })
                     
                     # Add function result to conversation
                     result_message = self._format_function_result_for_message(
@@ -244,9 +252,11 @@ Question: {question}
                     # Check if this is an answer or cancel function
                     if function_name == "answer":
                         self._log("Answer function called - process complete")
+                        await self._emit("complete", {"status": "success"})
                         return self._process_answer_result(result)
                     elif function_name == "cancel":
                         self._log("Cancel function called - process complete")
+                        await self._emit("complete", {"status": "cancelled"})
                         return self._process_cancel_result(result)
                     
                     if not result.success:
@@ -267,6 +277,11 @@ Question: {question}
                     self._log(f"LLM reasoning (full):\n{llm_response.content}")
                 else:
                     self._log(f"LLM reasoning: {llm_response.content[:400]}...")
+                
+                await self._emit("reasoning", {
+                    "iteration": self.iteration_count,
+                    "content": llm_response.content
+                })
                 
                 # Add assistant message to history
                 self.conversation_history.append(
@@ -325,6 +340,7 @@ Question: {question}
                     self._continue_prompt_count += 1
                     if self._continue_prompt_count >= self._max_continue_prompts:
                         self._log(f"LLM stopped without concluding {self._continue_prompt_count} times - forcing timeout")
+                        await self._emit("complete", {"status": "timeout"})
                         return self._create_timeout_result()
                     
                     self._log("LLM stopped without concluding - prompting to continue")

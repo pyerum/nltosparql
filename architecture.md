@@ -9,12 +9,13 @@ graph TD
     Agent <--> LLM["LLM (Ollama/OpenRouter)"]
     Agent <--> Functions["Function Registry"]
     Functions --> GenericSPARQL["Generic SPARQL Endpoint"]
-    Functions --> Specific API[e.g.: "Wikidata API"]
+    Functions --> SpecificAPI["SpecificAPI API"]
+
     Agent --> Response["Final Answer"]
     
     subgraph "Knowledge Graph Support"
         GenericSPARQL --> Config["Configurable Endpoints"]
-        Specific Endpoint --> Endpoint-specific Config[e.g.: "Wikidata-specific"]
+        SpecificAPI --> SpecificConfig["Platform-specific"]
     end
 ```
 

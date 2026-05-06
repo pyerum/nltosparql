@@ -223,6 +223,18 @@ Question: {question}
                         'success': result.success
                     })
                     
+                    # ADDED: Simple print of function return value
+                    if result.success:
+                        print(f"\n=== FUNCTION RETURN: {function_name} ===")
+                        print(f"Arguments: {arguments}")
+                        print(f"Return value: {result.result}")
+                        print("=" * 50 + "\n")
+                    else:
+                        print(f"\n=== FUNCTION ERROR: {function_name} ===")
+                        print(f"Arguments: {arguments}")
+                        print(f"Error: {result.error}")
+                        print("=" * 50 + "\n")
+                    
                     await self._emit("function_result", {
                         "iteration": self.iteration_count,
                         "function": function_name,
